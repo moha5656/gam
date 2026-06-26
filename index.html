@@ -363,7 +363,6 @@ var MN = ['يناير','فبراير','مارس','أبريل','مايو','يون
 /* ── HIJRI TO GREGORIAN ── */
 function hijriToGregorian(hYear, hMonth) {
   // Convert Hijri (1st of month) to Gregorian using JDN
-  var N = hDay_1 = 1;
   var jdn = Math.floor((11 * hYear + 3) / 30) +
             354 * hYear + 30 * hMonth -
             Math.floor((hMonth - 1) / 2) + 1 + 1948440 - 385;
@@ -494,9 +493,9 @@ async function loadHome() {
   var empty = document.getElementById('empty');
   list.innerHTML = '<div class="loader"><div class="spin"></div>جاري التحميل...</div>';
   empty.style.display = 'none';
-
+  try {
   var result = await sb.from('jamiya').select('*').order('created_at', { ascending: false });
-  if (result.error) { list.innerHTML = '<div class="loader">فشل التحميل</div>'; return; }
+  if (result.error) { list.innerHTML = '<div class="loader">خطأ: ' + result.error.message + '</div>'; return; }
   var jams = result.data;
 
   document.getElementById('kpi-n').textContent = jams.length;
@@ -546,6 +545,9 @@ async function loadHome() {
     div.addEventListener('click', function() { openDetail(j); });
     list.appendChild(div);
   });
+  } catch(e) {
+    list.innerHTML = '<div class="loader">خطأ: ' + e.message + '</div>';
+  }
 }
 
 /* ── CREATE ── */
@@ -843,9 +845,15 @@ async function deleteJam() {
   nav('home');
 }
 
-renderMembers();
-populateHijriYears();
-loadHome();
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    renderMembers();
+    populateHijriYears();
+    loadHome();
+  } catch(e) {
+    document.getElementById('jlist').innerHTML = '<div class="loader">خطأ في التهيئة: ' + e.message + '</div>';
+  }
+});
 </script>
 </body>
 </html>
