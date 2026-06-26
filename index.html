@@ -74,55 +74,6 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--paper);color
 /* ── PAGES ── */
 .page{display:none}.page.on{display:block}
 
-/* ── LOADING OVERLAY ── */
-.loading-overlay{
-  position:fixed;inset:0;background:var(--paper);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;z-index:1000;
-}
-.loading-overlay.hidden{display:none}
-.spinner{
-  width:36px;height:36px;border:3px solid var(--line);
-  border-top-color:var(--teal);border-radius:50%;
-  animation:spin .7s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-size:14px;font-weight:600;color:var(--ink3)}
-
-/* ── SETUP SCREEN ── */
-.setup-screen{
-  position:fixed;inset:0;background:var(--paper);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:32px 24px;z-index:999;
-}
-.setup-screen.hidden{display:none}
-.setup-logo{
-  width:64px;height:64px;border-radius:20px;background:var(--ink);
-  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
-}
-.setup-logo svg{width:32px;height:32px;stroke:var(--teal);stroke-width:1.8}
-.setup-h{font-size:22px;font-weight:700;margin-bottom:6px;text-align:center}
-.setup-p{font-size:13px;color:var(--ink3);text-align:center;line-height:1.7;margin-bottom:28px}
-.setup-field{width:100%;margin-bottom:14px}
-.setup-field label{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.5px;display:block;margin-bottom:6px}
-.setup-field input{
-  width:100%;padding:13px 14px;
-  border:1px solid var(--line);border-radius:var(--rs);
-  background:var(--white);color:var(--ink);
-  font-size:14px;font-family:'IBM Plex Sans Arabic',sans-serif;
-  outline:none;transition:border-color .15s;
-  direction:ltr;
-}
-.setup-field input:focus{border-color:var(--teal)}
-.setup-btn{
-  width:100%;padding:15px;border:none;border-radius:var(--r);
-  background:var(--ink);color:var(--white);
-  font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;
-  cursor:pointer;margin-top:4px;
-}
-.setup-note{font-size:11px;color:var(--ink3);text-align:center;margin-top:14px;line-height:1.6}
-.setup-note a{color:var(--teal-dark);text-decoration:none}
-
 /* ─────── HOME PAGE ─────── */
 .kpi-strip{
   background:var(--ink);border-radius:24px;
@@ -245,7 +196,6 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--paper);color
 }
 .btn-solid svg{width:18px;height:18px;stroke:var(--white);stroke-width:2}
 .btn-solid:active{background:#222}
-.btn-solid:disabled{background:#999;cursor:not-allowed}
 
 /* ─────── DETAIL PAGE ─────── */
 .detail-top{
@@ -316,40 +266,6 @@ tr:nth-child(even) td{background:#FAFAF8}
 </style>
 </head>
 <body>
-
-<!-- ── LOADING OVERLAY ── -->
-<div class="loading-overlay" id="loading-overlay">
-  <div class="spinner"></div>
-  <div class="loading-txt">جاري التحميل…</div>
-</div>
-
-<!-- ── SETUP SCREEN (first time) ── -->
-<div class="setup-screen hidden" id="setup-screen">
-  <div class="setup-logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  </div>
-  <div class="setup-h">اتصل بـ Supabase</div>
-  <div class="setup-p">أدخل بيانات مشروعك لحفظ جمعياتك في السحابة والوصول إليها من أي جهاز</div>
-  <div class="setup-field">
-    <label>Project URL</label>
-    <input id="sb-url" type="url" placeholder="https://xxxx.supabase.co" dir="ltr">
-  </div>
-  <div class="setup-field">
-    <label>Anon Public Key</label>
-    <input id="sb-key" type="text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." dir="ltr">
-  </div>
-  <button class="setup-btn" onclick="saveConfig()">حفظ والاتصال</button>
-  <div class="setup-note">
-    ابحث عن هذه البيانات في<br>
-    <a href="https://supabase.com/dashboard" target="_blank">Supabase Dashboard → Settings → API</a>
-  </div>
-</div>
-
 <div class="shell">
 
   <!-- TOPBAR -->
@@ -357,13 +273,10 @@ tr:nth-child(even) td{background:#FAFAF8}
     <button class="topbar-back" id="tb-back" onclick="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
-    <div style="flex:1">
+    <div>
       <div class="topbar-title" id="tb-title">جمعيتي</div>
       <div class="topbar-sub" id="tb-sub"></div>
     </div>
-    <button onclick="showSetup()" style="border:none;background:none;cursor:pointer;padding:4px;color:var(--ink3)" title="إعدادات الاتصال">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    </button>
   </div>
 
   <!-- BODY -->
@@ -416,7 +329,7 @@ tr:nth-child(even) td{background:#FAFAF8}
             <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             إضافة عضو
           </button>
-          <button class="btn-solid" id="btn-create" onclick="createJam()">
+          <button class="btn-solid" onclick="createJam()">
             <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
             إنشاء الجمعية
           </button>
@@ -448,185 +361,70 @@ tr:nth-child(even) td{background:#FAFAF8}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════
-   SUPABASE CONFIG
-   ══════════════════════════════════════════ */
-let SUPABASE_URL = localStorage.getItem('sb_url') || '';
-let SUPABASE_KEY = localStorage.getItem('sb_key') || '';
-
-function sbFetch(path, options = {}) {
-  return fetch(SUPABASE_URL + '/rest/v1/' + path, {
-    ...options,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': options.prefer || 'return=representation',
-      ...options.extraHeaders
-    }
-  });
-}
-
-/* ══════════════════════════════════════════
-   STATE
-   ══════════════════════════════════════════ */
-let DB = [];
+let DB = JSON.parse(localStorage.getItem('j4') || '[]');
 let mbrs = ['','',''];
 let curId = null;
 
-/* ══════════════════════════════════════════
-   INIT
-   ══════════════════════════════════════════ */
-async function init() {
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    hideLoading();
-    showSetup();
-    return;
-  }
-  try {
-    await loadFromSupabase();
-    hideLoading();
-    renderMembers();
-    renderHome();
-  } catch (e) {
-    hideLoading();
-    showSetup();
-    toast('تعذّر الاتصال — تحقق من الإعدادات');
-  }
+const save = () => localStorage.setItem('j4', JSON.stringify(DB));
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2000);
 }
 
-function hideLoading() {
-  document.getElementById('loading-overlay').classList.add('hidden');
-}
+const MN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
-function showSetup() {
-  document.getElementById('setup-screen').classList.remove('hidden');
-  if (SUPABASE_URL) document.getElementById('sb-url').value = SUPABASE_URL;
-  if (SUPABASE_KEY) document.getElementById('sb-key').value = SUPABASE_KEY;
-}
-
-async function saveConfig() {
-  const url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
-  const key = document.getElementById('sb-key').value.trim();
-  if (!url || !key) { toast('أدخل الرابط والمفتاح'); return; }
-  SUPABASE_URL = url;
-  SUPABASE_KEY = key;
-  localStorage.setItem('sb_url', url);
-  localStorage.setItem('sb_key', key);
-  document.getElementById('setup-screen').classList.add('hidden');
-  document.getElementById('loading-overlay').classList.remove('hidden');
-  try {
-    await loadFromSupabase();
-    hideLoading();
-    renderMembers();
-    renderHome();
-    toast('✓ تم الاتصال بنجاح');
-  } catch (e) {
-    hideLoading();
-    showSetup();
-    toast('فشل الاتصال — تحقق من البيانات');
-  }
-}
-
-/* ══════════════════════════════════════════
-   DB OPERATIONS
-   ══════════════════════════════════════════ */
-async function loadFromSupabase() {
-  const res = await sbFetch('jameyas?order=created_at.asc');
-  if (!res.ok) throw new Error('fetch failed');
-  DB = await res.json();
-}
-
-async function insertJam(jam) {
-  const res = await sbFetch('jameyas', {
-    method: 'POST',
-    body: JSON.stringify(jam)
-  });
-  if (!res.ok) throw new Error('insert failed');
-  const rows = await res.json();
-  return rows[0];
-}
-
-async function updateJam(id, patch) {
-  const res = await sbFetch(`jameyas?id=eq.${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(patch),
-    prefer: 'return=minimal'
-  });
-  if (!res.ok) throw new Error('update failed');
-}
-
-async function removeJam(id) {
-  const res = await sbFetch(`jameyas?id=eq.${id}`, {
-    method: 'DELETE',
-    prefer: 'return=minimal'
-  });
-  if (!res.ok) throw new Error('delete failed');
-}
-
-/* ══════════════════════════════════════════
-   UI HELPERS
-   ══════════════════════════════════════════ */
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('on');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2500);
-}
-
-const MN = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-
-function nav(p) {
-  ['home','create'].forEach(id => {
-    document.getElementById('bn-'+id).classList.toggle('on', id === p);
+function nav(p){
+  ['home','create'].forEach(id=>{
+    document.getElementById('bn-'+id).classList.toggle('on',id===p);
   });
   showPage(p);
-  if (p === 'home') { renderHome(); setTop('جمعيتي','',false); }
-  if (p === 'create') { setTop('جمعية جديدة','',false); }
+  if(p==='home'){renderHome();setTop('جمعيتي','',false)}
+  if(p==='create'){setTop('جمعية جديدة','',false)}
 }
 
-function showPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('on'));
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('on');
-  document.getElementById('tb-back').classList.toggle('on', p === 'detail');
+  document.getElementById('tb-back').classList.toggle('on',p==='detail');
 }
 
-function setTop(title, sub, back) {
-  document.getElementById('tb-title').textContent = title;
-  document.getElementById('tb-sub').textContent = sub;
-  document.getElementById('tb-back').classList.toggle('on', back);
+function setTop(title,sub,back){
+  document.getElementById('tb-title').textContent=title;
+  document.getElementById('tb-sub').textContent=sub;
+  document.getElementById('tb-back').classList.toggle('on',back);
 }
 
-function goBack() { nav('home'); }
+function goBack(){nav('home')}
 
-/* ══════════════════════════════════════════
-   HOME
-   ══════════════════════════════════════════ */
-function renderHome() {
-  const list = document.getElementById('jam-list');
-  const empty = document.getElementById('empty-home');
-  const kpiNum = document.getElementById('kpi-num');
-  const kpiDesc = document.getElementById('kpi-desc');
-  const kpiChips = document.getElementById('kpi-chips');
+/* ── HOME ── */
+function renderHome(){
+  const list=document.getElementById('jam-list');
+  const empty=document.getElementById('empty-home');
+  const kpiNum=document.getElementById('kpi-num');
+  const kpiDesc=document.getElementById('kpi-desc');
+  const kpiChips=document.getElementById('kpi-chips');
 
-  kpiNum.textContent = DB.length;
-  if (!DB.length) {
-    kpiDesc.textContent = 'لا توجد جمعيات بعد';
-    kpiChips.innerHTML = '';
-    list.innerHTML = ''; empty.style.display = 'block'; return;
+  kpiNum.textContent=DB.length;
+  if(!DB.length){
+    kpiDesc.textContent='لا توجد جمعيات بعد';
+    kpiChips.innerHTML='';
+    list.innerHTML='';empty.style.display='block';return;
   }
-  const totalM = DB.reduce((a,j) => a + j.members.length, 0);
-  const totalFund = DB.reduce((a,j) => a + (j.members.length - 1) * j.amount, 0);
-  kpiDesc.textContent = DB.length === 1 ? 'جمعية واحدة نشطة' : DB.length + ' جمعيات نشطة';
-  kpiChips.innerHTML = `
+  const totalM=DB.reduce((a,j)=>a+j.members.length,0);
+  const totalFund=DB.reduce((a,j)=>a+(j.members.length-1)*j.amount,0);
+  kpiDesc.textContent=`${DB.length===1?'جمعية واحدة نشطة':DB.length+' جمعيات نشطة'}`;
+  kpiChips.innerHTML=`
     <div class="kpi-chip"><span>${totalM}</span> عضو</div>
     <div class="kpi-chip">صندوق <span>${totalFund.toLocaleString()}</span></div>`;
-  empty.style.display = 'none';
+  empty.style.display='none';
 
-  list.innerHTML = DB.map(j => {
-    const paid = j.months.reduce((a,m) => a + Object.values(m.payments).filter(Boolean).length, 0);
-    const total = j.months.reduce((a) => a + (j.members.length - 1), 0);
-    const pct = total ? Math.round(paid / total * 100) : 0;
-    const fund = (j.members.length - 1) * j.amount;
+  list.innerHTML=DB.map(j=>{
+    const paid=j.months.reduce((a,m)=>a+Object.values(m.payments).filter(Boolean).length,0);
+    const total=j.months.reduce((a)=>a+(j.members.length-1),0);
+    const pct=total?Math.round(paid/total*100):0;
+    const fund=(j.members.length-1)*j.amount;
     return `<div class="jam-row" onclick="openDetail(${j.id})">
       <div class="jam-row-accent"></div>
       <div class="jam-row-top">
@@ -644,88 +442,74 @@ function renderHome() {
   }).join('');
 }
 
-/* ══════════════════════════════════════════
-   CREATE
-   ══════════════════════════════════════════ */
-function renderMembers() {
-  document.getElementById('members-list').innerHTML = mbrs.map((m,i) => `
+/* ── CREATE ── */
+function renderMembers(){
+  document.getElementById('members-list').innerHTML=mbrs.map((m,i)=>`
     <div class="member-add-row">
       <div class="member-idx">${i+1}</div>
       <input type="text" value="${m}" placeholder="اسم العضو ${i+1}" oninput="mbrs[${i}]=this.value">
-      ${mbrs.length > 2 ? `<div class="del-m" onclick="delMbr(${i})"><svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>` : ''}
+      ${mbrs.length>2?`<div class="del-m" onclick="delMbr(${i})"><svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`:''}
     </div>`).join('');
 }
-function addMember() { mbrs.push(''); renderMembers(); }
-function delMbr(i) { mbrs.splice(i,1); renderMembers(); }
+function addMember(){mbrs.push('');renderMembers()}
+function delMbr(i){mbrs.splice(i,1);renderMembers()}
 
-async function createJam() {
-  const name = document.getElementById('f-name').value.trim();
-  const amount = parseFloat(document.getElementById('f-amount').value);
-  const start = document.getElementById('f-start').value;
-  const members = mbrs.map(m => m.trim()).filter(Boolean);
-  if (!name) { toast('أدخل اسم الجمعية'); return; }
-  if (!amount || amount <= 0) { toast('أدخل مبلغاً صحيحاً'); return; }
-  if (!start) { toast('اختر شهر البداية'); return; }
-  if (members.length < 2) { toast('أضف عضوين على الأقل'); return; }
-
-  const months = members.map((_,i) => {
-    const d = new Date(start+'-01'); d.setMonth(d.getMonth()+i);
-    return { year: d.getFullYear(), month: d.getMonth()+1, receiver: i, payments: {} };
+function createJam(){
+  const name=document.getElementById('f-name').value.trim();
+  const amount=parseFloat(document.getElementById('f-amount').value);
+  const start=document.getElementById('f-start').value;
+  const members=mbrs.map(m=>m.trim()).filter(Boolean);
+  if(!name){toast('أدخل اسم الجمعية');return}
+  if(!amount||amount<=0){toast('أدخل مبلغاً صحيحاً');return}
+  if(!start){toast('اختر شهر البداية');return}
+  if(members.length<2){toast('أضف عضوين على الأقل');return}
+  const months=members.map((_,i)=>{
+    const d=new Date(start+'-01');d.setMonth(d.getMonth()+i);
+    return{year:d.getFullYear(),month:d.getMonth()+1,receiver:i,payments:{}};
   });
-
-  const btn = document.getElementById('btn-create');
-  btn.disabled = true;
-  try {
-    const newJam = await insertJam({ id: Date.now(), name, amount, start, members, months });
-    DB.push(newJam);
-    mbrs = ['','','']; renderMembers();
-    document.getElementById('f-name').value = '';
-    document.getElementById('f-amount').value = '';
-    document.getElementById('f-start').value = '';
-    toast('تم إنشاء الجمعية ✓');
-    nav('home');
-  } catch(e) {
-    toast('خطأ في الحفظ — تحقق من الاتصال');
-  } finally {
-    btn.disabled = false;
-  }
+  DB.push({id:Date.now(),name,amount,start,members,months});
+  save();
+  mbrs=['','',''];renderMembers();
+  document.getElementById('f-name').value='';
+  document.getElementById('f-amount').value='';
+  document.getElementById('f-start').value='';
+  toast('تم إنشاء الجمعية ✓');
+  nav('home');
 }
 
-/* ══════════════════════════════════════════
-   DETAIL
-   ══════════════════════════════════════════ */
-function openDetail(id) {
-  curId = id;
-  const j = DB.find(x => x.id === id);
-  ['bn-home','bn-create'].forEach(b => document.getElementById(b).classList.remove('on'));
+/* ── DETAIL ── */
+function openDetail(id){
+  curId=id;
+  const j=DB.find(x=>x.id===id);
+  ['bn-home','bn-create'].forEach(b=>document.getElementById(b).classList.remove('on'));
   showPage('detail');
-  const startD = new Date(j.start+'-01');
-  setTop(j.name, MN[startD.getMonth()]+' '+startD.getFullYear(), true);
+  const startD=new Date(j.start+'-01');
+  setTop(j.name,MN[startD.getMonth()]+' '+startD.getFullYear(),true);
   renderDetail(j);
 }
 
-function renderDetail(j) {
-  const paid = j.months.reduce((a,m) => a + Object.values(m.payments).filter(Boolean).length, 0);
-  const total = j.months.reduce((a) => a + (j.members.length - 1), 0);
-  const pct = total ? Math.round(paid / total * 100) : 0;
-  const fund = (j.members.length - 1) * j.amount;
-  const startD = new Date(j.start+'-01');
-  const endD = new Date(j.start+'-01'); endD.setMonth(endD.getMonth()+j.months.length-1);
+function renderDetail(j){
+  const paid=j.months.reduce((a,m)=>a+Object.values(m.payments).filter(Boolean).length,0);
+  const total=j.months.reduce((a)=>a+(j.members.length-1),0);
+  const pct=total?Math.round(paid/total*100):0;
+  const fund=(j.members.length-1)*j.amount;
+  const startD=new Date(j.start+'-01');
+  const endD=new Date(j.start+'-01');endD.setMonth(endD.getMonth()+j.months.length-1);
 
-  const tblRows = j.months.map((mo,mi) => {
-    const allDone = j.members.every((_,xi) => xi === mo.receiver || mo.payments[xi]);
-    const label = MN[mo.month-1]+' '+mo.year;
+  const tblRows=j.months.map((mo,mi)=>{
+    const allDone=j.members.every((_,xi)=>xi===mo.receiver||mo.payments[xi]);
+    const label=MN[mo.month-1]+' '+mo.year;
     return `<tr>
-      <td>${allDone ? '<span class="ok-dot"></span>' : ''}${label}</td>
-      ${j.members.map((_,xi) => {
-        if (xi === mo.receiver) return `<td><span class="rcv-badge">مستلم</span></td>`;
-        const p = mo.payments[xi];
-        return `<td><span class="pay-cell" onclick="togglePay(${j.id},${mi},${xi})">${p ? '✅' : '⬜'}</span></td>`;
+      <td>${allDone?'<span class="ok-dot"></span>':''}${label}</td>
+      ${j.members.map((_,xi)=>{
+        if(xi===mo.receiver) return `<td><span class="rcv-badge">مستلم</span></td>`;
+        const p=mo.payments[xi];
+        return `<td><span class="pay-cell" onclick="togglePay(${j.id},${mi},${xi})">${p?'✅':'⬜'}</span></td>`;
       }).join('')}
     </tr>`;
   }).join('');
 
-  document.getElementById('page-detail').innerHTML = `
+  document.getElementById('page-detail').innerHTML=`
     <div class="detail-top">
       <div class="detail-name">${j.name}</div>
       <div class="detail-dates">${MN[startD.getMonth()]} ${startD.getFullYear()} — ${MN[endD.getMonth()]} ${endD.getFullYear()}</div>
@@ -744,7 +528,7 @@ function renderDetail(j) {
       <div class="tbl-wrap"><table>
         <thead><tr>
           <th>الشهر</th>
-          ${j.members.map(m => `<th>${m}</th>`).join('')}
+          ${j.members.map(m=>`<th>${m}</th>`).join('')}
         </tr></thead>
         <tbody>${tblRows}</tbody>
       </table></div>
@@ -755,36 +539,22 @@ function renderDetail(j) {
     </button>`;
 }
 
-async function togglePay(jid, mi, xi) {
-  const j = DB.find(x => x.id === jid);
-  j.months[mi].payments[xi] = !j.months[mi].payments[xi];
-  try {
-    await updateJam(jid, { months: j.months });
-    toast(j.months[mi].payments[xi] ? 'تم تسجيل الدفع ✓' : 'تم الإلغاء');
-    renderDetail(j);
-  } catch(e) {
-    // revert on failure
-    j.months[mi].payments[xi] = !j.months[mi].payments[xi];
-    toast('خطأ في الحفظ');
-  }
+function togglePay(jid,mi,xi){
+  const j=DB.find(x=>x.id===jid);
+  j.months[mi].payments[xi]=!j.months[mi].payments[xi];
+  save();
+  toast(j.months[mi].payments[xi]?'تم تسجيل الدفع ✓':'تم الإلغاء');
+  renderDetail(j);
 }
 
-async function deleteJam(id) {
-  if (!confirm('حذف هذه الجمعية نهائياً؟')) return;
-  try {
-    await removeJam(id);
-    DB = DB.filter(j => j.id !== id);
-    toast('تم الحذف');
-    nav('home');
-  } catch(e) {
-    toast('خطأ في الحذف');
-  }
+function deleteJam(id){
+  if(!confirm('حذف هذه الجمعية نهائياً؟')) return;
+  DB=DB.filter(j=>j.id!==id);save();
+  toast('تم الحذف');nav('home');
 }
 
-/* ══════════════════════════════════════════
-   START
-   ══════════════════════════════════════════ */
-init();
+renderMembers();
+renderHome();
 </script>
 </body>
 </html>
