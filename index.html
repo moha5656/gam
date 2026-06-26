@@ -200,6 +200,8 @@ tr:nth-child(even) td{background:#FAFAF8}
 .ok-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-left:4px;vertical-align:2px}
 
 /* DELETE */
+.btn-print{width:100%;padding:13px;border-radius:var(--r);background:var(--teal-bg);border:1px solid #99EAD8;color:var(--teal-dk);font-size:14px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;-webkit-appearance:none}
+.btn-print svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
 .btn-del{width:100%;padding:13px;border-radius:var(--r);background:var(--red-bg);border:1px solid #FFD0D4;color:var(--red);font-size:14px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:24px;-webkit-appearance:none}
 .btn-del svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
 
@@ -251,7 +253,29 @@ tr:nth-child(even) td{background:#FAFAF8}
         <div class="fblock-body">
           <div class="field"><label class="flabel">الاسم</label><input class="finput" id="f-name" type="text" placeholder="جمعية 2025" autocomplete="off"></div>
           <div class="field"><label class="flabel">المبلغ الشهري للعضو</label><input class="finput" id="f-amount" type="number" min="1" inputmode="numeric" placeholder="500"></div>
-          <div class="field"><label class="flabel">شهر البداية</label><input class="finput" id="f-start" type="month"></div>
+          <div class="field">
+<label class="flabel">شهر البداية (هجري)</label>
+<div style="display:flex;gap:8px">
+  <select class="finput" id="f-hijri-month" style="flex:1.2">
+    <option value="">الشهر</option>
+    <option value="1">محرم</option>
+    <option value="2">صفر</option>
+    <option value="3">ربيع الأول</option>
+    <option value="4">ربيع الآخر</option>
+    <option value="5">جمادى الأولى</option>
+    <option value="6">جمادى الآخرة</option>
+    <option value="7">رجب</option>
+    <option value="8">شعبان</option>
+    <option value="9">رمضان</option>
+    <option value="10">شوال</option>
+    <option value="11">ذو القعدة</option>
+    <option value="12">ذو الحجة</option>
+  </select>
+  <select class="finput" id="f-hijri-year" style="flex:1">
+    <option value="">السنة</option>
+  </select>
+</div>
+</div>
         </div>
       </div>
       <div class="fblock">
@@ -335,11 +359,75 @@ function gregorianMonthToHijri(gYear, gMonth) {
 }
 
 var MN = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+/* ── HIJRI TO GREGORIAN ── */
+function hijriToGregorian(hYear, hMonth) {
+  // Convert Hijri (1st of month) to Gregorian using JDN
+  var N = hDay_1 = 1;
+  var jdn = Math.floor((11 * hYear + 3) / 30) +
+            354 * hYear + 30 * hMonth -
+            Math.floor((hMonth - 1) / 2) + 1 + 1948440 - 385;
+  // JDN to Gregorian
+  var l = jdn + 68569;
+  var n = Math.floor((4 * l) / 146097);
+  l = l - Math.floor((146097 * n + 3) / 4);
+  var i = Math.floor((4000 * (l + 1)) / 1461001);
+  l = l - Math.floor((1461 * i) / 4) + 31;
+  var j = Math.floor((80 * l) / 2447);
+  var gDay = l - Math.floor((2447 * j) / 80);
+  l = Math.floor(j / 11);
+  var gMonth = j + 2 - 12 * l;
+  var gYear = 100 * (n - 49) + i + l;
+  return { year: gYear, month: gMonth, day: gDay };
+}
+
+function populateHijriYears() {
+  var sel = document.getElementById('f-hijri-year');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">السنة</option>';
+  // current hijri year
+  var now = new Date();
+  var curH = toHijri(now.getFullYear(), now.getMonth()+1, now.getDate());
+  for (var y = curH.year - 1; y <= curH.year + 5; y++) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + ' هـ';
+    if (y === curH.year) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function getGregorianStartMonth() {
+  var hm = parseInt(document.getElementById('f-hijri-month').value);
+  var hy = parseInt(document.getElementById('f-hijri-year').value);
+  if (!hm || !hy) return null;
+  var g = hijriToGregorian(hy, hm);
+  // format as YYYY-MM
+  var mm = g.month < 10 ? '0' + g.month : '' + g.month;
+  return g.year + '-' + mm;
+}
+
 var mbrs = ['','',''];
 var curJam = null;
 var payCache = {};      // saved state from DB
 var editCache = {};     // working copy during edit mode
 var isEditMode = false;
+
+
+/* ── PRINT ── */
+@media print {
+  .topbar,.bnav,.bnav-spacer,.topbar-spacer,.btn-print,.btn-del,.btn-edit,.btn-save,.btn-cancel,.edit-banner{display:none!important}
+  body{background:#fff;font-size:12px}
+  .shell{max-width:100%}
+  .body{padding:0}
+  .dtop{background:#1a1a1a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:8px}
+  .sgrid{break-inside:avoid}
+  .tblock{break-inside:avoid}
+  .jcard,.kpi,.sgrid,.tblock{page-break-inside:avoid}
+  table{font-size:11px}
+  th{background:#f0f0f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pbar-f{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 
 /* ── TOAST ── */
 function showToast(msg) {
@@ -477,7 +565,7 @@ function delMbr(i) { mbrs.splice(i, 1); renderMembers(); }
 async function createJam() {
   var name = document.getElementById('f-name').value.trim();
   var amount = parseFloat(document.getElementById('f-amount').value);
-  var start = document.getElementById('f-start').value;
+  var start = getGregorianStartMonth();
   var members = mbrs.map(function(m) { return m.trim(); }).filter(Boolean);
   if (!name) { showToast('أدخل اسم الجمعية'); return; }
   if (!amount || amount <= 0) { showToast('أدخل مبلغاً صحيحاً'); return; }
@@ -494,7 +582,8 @@ async function createJam() {
   renderMembers();
   document.getElementById('f-name').value = '';
   document.getElementById('f-amount').value = '';
-  document.getElementById('f-start').value = '';
+  document.getElementById('f-hijri-month').value = '';
+  populateHijriYears();
   nav('home');
 }
 
@@ -581,6 +670,10 @@ function renderDetail() {
         '<tbody>' + rows + '</tbody>' +
       '</table></div>' +
     '</div>' +
+    '<button class="btn-print" onclick="printPDF()">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>' +
+      'طباعة / تصدير PDF' +
+    '</button>' +
     '<button class="btn-del" onclick="deleteJam()">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>' +
       'حذف الجمعية' +
@@ -659,6 +752,87 @@ async function saveEdit() {
   renderDetail();
 }
 
+
+function printPDF() {
+  // Temporarily exit edit mode for clean print
+  var wasEdit = isEditMode;
+  if (isEditMode) { isEditMode = false; renderDetail(); }
+  
+  var j = curJam;
+  var months = buildMonths(j);
+  var fund = (j.members.length - 1) * j.amount;
+  var stats = calcStats(j, months, payCache);
+  var startD = new Date(j.start_month + '-01');
+  var endD = new Date(j.start_month + '-01');
+  endD.setMonth(endD.getMonth() + months.length - 1);
+
+  var rows = '';
+  months.forEach(function(mo, mi) {
+    var allDone = j.members.every(function(_, xi) { return xi === mo.receiver || payCache[mi + '_' + xi]; });
+    var label = (allDone ? '✓ ' : '') + gregorianMonthToHijri(mo.year, mo.month);
+    var cells = '';
+    j.members.forEach(function(_, xi) {
+      if (xi === mo.receiver) { cells += '<td style="background:#FFF8E6;color:#8a6000;font-size:10px;font-weight:700;text-align:center">مستلم</td>'; }
+      else { cells += '<td style="text-align:center;font-size:16px">' + (payCache[mi + '_' + xi] ? '✅' : '⬜') + '</td>'; }
+    });
+    rows += '<tr style="' + (allDone ? 'background:#f0fdf4' : '') + '"><td style="padding:8px;font-size:11px;font-weight:600;white-space:nowrap">' + label + '</td>' + cells + '</tr>';
+  });
+
+  var thCells = j.members.map(function(m) { return '<th style="background:#f5f4f0;padding:8px;font-size:11px;font-weight:700;color:#888;white-space:nowrap">' + m + '</th>'; }).join('');
+
+  var win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">');
+  win.document.write('<title>' + j.name + ' — إحصائيات</title>');
+  win.document.write('<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">');
+  win.document.write('<style>');
+  win.document.write('*{box-sizing:border-box;margin:0;padding:0}');
+  win.document.write('body{font-family:"IBM Plex Sans Arabic",sans-serif;background:#fff;color:#0D0D0D;padding:24px;font-size:13px}');
+  win.document.write('.header{background:#0D0D0D;color:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}');
+  win.document.write('.h-name{font-size:22px;font-weight:700}');
+  win.document.write('.h-dates{font-size:12px;opacity:.6;margin-top:4px}');
+  win.document.write('.h-logo{font-size:10px;font-weight:700;color:#00C9A7;letter-spacing:1px}');
+  win.document.write('.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}');
+  win.document.write('.stat{border:1px solid #E8E6E0;border-radius:10px;padding:12px;text-align:center}');
+  win.document.write('.stat-n{font-size:22px;font-weight:700;color:#009E84}');
+  win.document.write('.stat-l{font-size:10px;color:#888;margin-top:2px;font-weight:600}');
+  win.document.write('.pbar-wrap{margin-bottom:20px}');
+  win.document.write('.pbar-label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:600}');
+  win.document.write('.pbar{height:8px;background:#E8E6E0;border-radius:99px;overflow:hidden}');
+  win.document.write('.pbar-f{height:100%;background:#00C9A7;border-radius:99px}');
+  win.document.write('table{width:100%;border-collapse:collapse;border:1px solid #E8E6E0;border-radius:10px;overflow:hidden}');
+  win.document.write('th:first-child{text-align:right;padding-right:12px}');
+  win.document.write('td:first-child{padding-right:12px}');
+  win.document.write('tr:last-child td{border-bottom:none}');
+  win.document.write('td{border-bottom:1px solid #F0F0F0;padding:10px 6px}');
+  win.document.write('tr:nth-child(even) td{background:#FAFAF8}');
+  win.document.write('.footer{margin-top:20px;text-align:center;font-size:11px;color:#bbb}');
+  win.document.write('@media print{body{padding:12px}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pbar-f{-webkit-print-color-adjust:exact;print-color-adjust:exact}}');
+  win.document.write('</style></head><body>');
+
+  win.document.write('<div class="header">');
+  win.document.write('<div><div class="h-name">' + j.name + '</div>');
+  win.document.write('<div class="h-dates">' + gregorianMonthToHijri(startD.getFullYear(), startD.getMonth()+1) + ' — ' + gregorianMonthToHijri(endD.getFullYear(), endD.getMonth()+1) + '</div></div>');
+  win.document.write('<div class="h-logo">JAMIYA</div></div>');
+
+  win.document.write('<div class="stats">');
+  win.document.write('<div class="stat"><div class="stat-n">' + j.members.length + '</div><div class="stat-l">أعضاء</div></div>');
+  win.document.write('<div class="stat"><div class="stat-n">' + Number(j.amount).toLocaleString('ar') + '</div><div class="stat-l">مبلغ العضو</div></div>');
+  win.document.write('<div class="stat"><div class="stat-n">' + fund.toLocaleString('ar') + '</div><div class="stat-l">الصندوق الشهري</div></div>');
+  win.document.write('<div class="stat"><div class="stat-n">' + stats.pct + '%</div><div class="stat-l">نسبة الإنجاز</div></div>');
+  win.document.write('</div>');
+
+  win.document.write('<div class="pbar-wrap">');
+  win.document.write('<div class="pbar-label"><span>نسبة الدفعات المكتملة</span><span>' + stats.paid + ' من ' + stats.total + ' دفعة</span></div>');
+  win.document.write('<div class="pbar"><div class="pbar-f" style="width:' + stats.pct + '%"></div></div>');
+  win.document.write('</div>');
+
+  win.document.write('<table><thead><tr><th style="background:#f5f4f0;padding:10px 6px;font-size:11px;font-weight:700;color:#888;border-bottom:1px solid #E8E6E0">الشهر</th>' + thCells + '</tr></thead><tbody>' + rows + '</tbody></table>');
+  win.document.write('<div class="footer">جمعيتي — تم إنشاء هذا التقرير تلقائياً</div>');
+  win.document.write('</body></html>');
+  win.document.close();
+  setTimeout(function() { win.print(); }, 600);
+}
+
 async function deleteJam() {
   if (!confirm('حذف هذه الجمعية نهائياً؟')) return;
   var res = await sb.from('jamiya').delete().eq('id', curJam.id);
@@ -670,6 +844,7 @@ async function deleteJam() {
 }
 
 renderMembers();
+populateHijriYears();
 loadHome();
 </script>
 </body>
