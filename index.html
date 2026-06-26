@@ -50,6 +50,8 @@ html,body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--paper);
 .jcard{background:var(--white);border-radius:var(--r);padding:15px;margin-bottom:10px;cursor:pointer;border:1px solid var(--line);position:relative;overflow:hidden;transition:transform .12s;-webkit-user-select:none;user-select:none}
 .jcard:active{transform:scale(.98)}
 .jcard-bar{position:absolute;top:0;right:0;width:4px;height:100%;background:var(--teal)}
+.jcard-opts{width:32px;height:32px;border-radius:8px;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--ink3);font-size:18px;font-weight:700;line-height:1;letter-spacing:1px}
+.jcard-opts:active{background:var(--line)}
 .jcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .jcard-name{font-size:15px;font-weight:700}
 .jcard-pill{background:var(--teal-bg);color:var(--teal-dk);font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
@@ -131,6 +133,32 @@ tr:nth-child(even) td{background:#FAFAF8}
 .btn-del svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
 #toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--white);padding:9px 18px;border-radius:99px;font-size:13px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;opacity:0;pointer-events:none;z-index:9999;white-space:nowrap;transition:opacity .2s,transform .2s;box-shadow:0 3px 16px rgba(0,0,0,.22)}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── ACTION SHEET (options) ── */
+.act-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s}
+.act-overlay.on{opacity:1}
+.act-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:430px;transform:translateY(20px);transition:transform .2s}
+.act-overlay.on .act-sheet{transform:translateY(0)}
+.act-jam-name{font-size:13px;font-weight:700;color:var(--ink3);text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.act-btn{width:100%;padding:14px 16px;border:none;border-radius:var(--r);background:none;font-size:15px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;gap:12px;color:var(--ink);-webkit-appearance:none;margin-bottom:8px}
+.act-btn:active{background:var(--paper)}
+.act-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.act-btn.danger{color:var(--red)}
+.act-btn-cancel{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink3);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;margin-top:4px;-webkit-appearance:none}
+
+/* ── DELETE OVERLAY ── */
+.del-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;transition:opacity .2s;opacity:0}
+.del-overlay.on{opacity:1}
+.del-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 18px 36px;width:100%;max-width:430px;transform:translateY(20px);transition:transform .2s}
+.del-overlay.on .del-sheet{transform:translateY(0)}
+.del-icon{width:52px;height:52px;border-radius:50%;background:var(--red-bg);border:1px solid #FFD0D4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.del-icon svg{width:22px;height:22px;stroke:var(--red);stroke-width:2;fill:none}
+.del-title{text-align:center;font-size:17px;font-weight:700;margin-bottom:6px}
+.del-sub{text-align:center;font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:22px}
+.del-sub b{color:var(--ink)}
+.del-actions{display:flex;flex-direction:column;gap:9px}
+.btn-del-confirm{width:100%;padding:15px;border:none;border-radius:var(--r);background:var(--red);color:var(--white);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
+.btn-del-cancel{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
 </style>
 </head>
 <body>
@@ -228,6 +256,35 @@ tr:nth-child(even) td{background:#FAFAF8}
     </button>
   </nav>
 </div>
+<div id="act-overlay" class="act-overlay" onclick="closeOpts()">
+  <div class="act-sheet" onclick="event.stopPropagation()">
+    <div class="act-jam-name" id="act-jam-name"></div>
+    <button class="act-btn" onclick="closeOpts();openDetailById()">
+      <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      عرض التفاصيل
+    </button>
+    <button class="act-btn" onclick="closeOpts();editJam()">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      تعديل الجمعية
+    </button>
+    <button class="act-btn danger" onclick="closeOpts();confirmDelete(activeJam.id,activeJam.name)">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      حذف الجمعية
+    </button>
+    <button class="act-btn-cancel" onclick="closeOpts()">إلغاء</button>
+  </div>
+</div>
+<div id="del-overlay" class="del-overlay" onclick="cancelDelete()">
+  <div class="del-sheet" onclick="event.stopPropagation()">
+    <div class="del-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div>
+    <div class="del-title">حذف الجمعية</div>
+    <div class="del-sub">هل أنت متأكد من حذف<br><b id="del-overlay-name"></b>؟<br>لا يمكن التراجع عن هذا الإجراء.</div>
+    <div class="del-actions">
+      <button class="btn-del-confirm" onclick="deleteJam()">نعم، احذف الجمعية</button>
+      <button class="btn-del-cancel" onclick="cancelDelete()">إلغاء</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -315,7 +372,17 @@ function nav(p) {
   document.getElementById('bn-create').classList.toggle('on', p==='create');
   showPage(p); window.scrollTo(0,0);
   if (p==='home') { setTop('جمعيتي','',false); loadHome(); }
-  if (p==='create') { setTop('جمعية جديدة','',false); }
+  if (p==='create') { 
+    if (!editingJamId) { // إذا إنشاء جديد وليس تعديل، صفّر النموذج
+      mbrs=['','','']; renderMembers();
+      document.getElementById('f-name').value='';
+      document.getElementById('f-amount').value='';
+      document.getElementById('f-hijri-month').value='';
+      populateHijriYears();
+      document.getElementById('btn-create').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
+    }
+    setTop('جمعية جديدة','',false);
+  }
 }
 
 function showPage(p) {
@@ -392,6 +459,7 @@ async function loadHome() {
   var pm = {};
   (pr.data||[]).forEach(function(p){pm[p.jamiya_id+'_'+p.month_index+'_'+p.member_index]=p.paid;});
   list.innerHTML = ''; empty.style.display = 'none';
+  allJams = jams;
   jams.forEach(function(j){
     var months = buildMonths(j);
     var lc = {};
@@ -399,7 +467,13 @@ async function loadHome() {
     var st = calcStats(j,months,lc), fund = (j.members.length-1)*j.amount;
     var div = document.createElement('div'); div.className = 'jcard';
     div.innerHTML = '<div class="jcard-bar"></div>'+
-      '<div class="jcard-top"><div class="jcard-name">'+j.name+'</div><div class="jcard-pill">'+Number(j.amount).toLocaleString('ar')+' ر.س</div></div>'+
+      '<div class="jcard-top">'+
+        '<div class="jcard-name">'+j.name+'</div>'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<div class="jcard-pill">'+Number(j.amount).toLocaleString('ar')+' ر.س</div>'+
+          '<div class="jcard-opts" id="opts-'+j.id+'" onclick="event.stopPropagation();openOpts(\''+j.id+'\',\''+j.name.replace(/'/g,"\\'")+'\')">···</div>'+
+        '</div>'+
+      '</div>'+
       '<div class="jcard-meta">'+
         '<div><div class="jmeta-v">'+j.members.length+'</div><div class="jmeta-k">أعضاء</div></div>'+
         '<div><div class="jmeta-v">'+fund.toLocaleString('ar')+'</div><div class="jmeta-k">الصندوق</div></div>'+
@@ -437,11 +511,19 @@ async function createJam() {
   if (members.length<2){toast('أضف عضوين على الأقل');return;}
   var btn = document.getElementById('btn-create');
   btn.disabled = true; btn.textContent = 'جاري الحفظ...';
-  var res = await sb.from('jamiya').insert({name:name,amount:amount,start_month:start,members:members}).select().single();
+
+  var res;
+  if (editingJamId) {
+    res = await sb.from('jamiya').update({name:name,amount:amount,start_month:start,members:members}).eq('id',editingJamId).select().single();
+  } else {
+    res = await sb.from('jamiya').insert({name:name,amount:amount,start_month:start,members:members}).select().single();
+  }
+
   btn.disabled = false;
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
   if (res.error){toast('خطأ: '+res.error.message);return;}
-  toast('تم إنشاء الجمعية ✓');
+  toast(editingJamId ? 'تم التعديل ✓' : 'تم إنشاء الجمعية ✓');
+  editingJamId = null;
   mbrs=['','','']; renderMembers();
   document.getElementById('f-name').value='';
   document.getElementById('f-amount').value='';
@@ -508,8 +590,7 @@ function renderDetail() {
       banner+
       '<div class="twrap"><table><thead><tr><th>الشهر</th>'+thCells+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '</div>'+
-    '<button class="btn-print" onclick="printPDF()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>طباعة / تصدير PDF</button>'+
-    '<button class="btn-del" onclick="deleteJam()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>حذف الجمعية</button>';
+    '<button class="btn-print" onclick="printPDF()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>طباعة / تصدير PDF</button>';
 }
 
 /* ── EDIT MODE ── */
@@ -600,12 +681,77 @@ function printPDF() {
   setTimeout(function(){win.print();},700);
 }
 
+/* ── OPTIONS SHEET ── */
+var activeJam = null;
+var allJams = [];
+
+function openOpts(id, name) {
+  activeJam = allJams.find(function(j){ return j.id == id; }) || {id:id, name:name};
+  document.getElementById('act-jam-name').textContent = name;
+  var ov = document.getElementById('act-overlay');
+  ov.style.display = 'flex';
+  setTimeout(function(){ ov.classList.add('on'); }, 10);
+}
+
+function closeOpts() {
+  var ov = document.getElementById('act-overlay');
+  ov.classList.remove('on');
+  setTimeout(function(){ ov.style.display = 'none'; }, 200);
+}
+
+function openDetailById() {
+  if (activeJam) openDetail(activeJam);
+}
+
+function editJam() {
+  if (!activeJam) return;
+  var j = activeJam;
+  // ملء نموذج الإنشاء ببيانات الجمعية للتعديل
+  document.getElementById('f-name').value = j.name;
+  document.getElementById('f-amount').value = j.amount;
+  // تحويل start_month من ميلادي إلى هجري لعرضه
+  var sm = parseStartMonth(j.start_month);
+  var parts = sm.split('-');
+  if (parts.length >= 2) {
+    var h = toHijri(parseInt(parts[0]), parseInt(parts[1]), 1);
+    document.getElementById('f-hijri-month').value = h.month;
+    populateHijriYears();
+    document.getElementById('f-hijri-year').value = h.year;
+  }
+  mbrs = j.members.slice(); renderMembers();
+  editingJamId = j.id;
+  nav('create');
+  document.getElementById('btn-create').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>حفظ التعديلات';
+}
+
 /* ── DELETE ── */
+var pendingDeleteId = null;
+var pendingDeleteName = '';
+var editingJamId = null;
+
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  pendingDeleteName = name;
+  var overlay = document.getElementById('del-overlay');
+  document.getElementById('del-overlay-name').textContent = name;
+  overlay.style.display = 'flex';
+  setTimeout(function(){ overlay.classList.add('on'); }, 10);
+}
+
+function cancelDelete() {
+  pendingDeleteId = null;
+  var overlay = document.getElementById('del-overlay');
+  overlay.classList.remove('on');
+  setTimeout(function(){ overlay.style.display = 'none'; }, 200);
+}
+
 async function deleteJam() {
-  if (!confirm('حذف هذه الجمعية نهائياً؟')) return;
-  var res = await sb.from('jamiya').delete().eq('id',curJam.id);
-  if (res.error){toast('خطأ في الحذف');return;}
-  toast('تم الحذف'); isEdit=false; curJam=null; nav('home');
+  if (!pendingDeleteId) return;
+  var res = await sb.from('jamiya').delete().eq('id', pendingDeleteId);
+  if (res.error){ toast('خطأ في الحذف'); cancelDelete(); return; }
+  toast('تم الحذف');
+  cancelDelete();
+  loadHome();
 }
 
 /* ── INIT ── */
