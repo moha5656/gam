@@ -727,7 +727,7 @@ async function createJam() {
 
   var res;
   if (editingJamId) {
-    res = await sb.from('jamiya').update({name:name,amount:amount,start_month:start,members:members}).eq('id',editingJamId).select().single();
+    res = await sb.from('jamiya').update({name:name,amount:amount,start_month:start,members:members}).eq('id',editingJamId).select();
   } else {
     res = await sb.from('jamiya').insert({name:name,amount:amount,start_month:start,members:members,created_by:currentUser.id,invite_code:genCode()}).select().single();
   }
