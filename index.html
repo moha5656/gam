@@ -736,6 +736,17 @@ async function createJam() {
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
   if (res.error){toast('خطأ: '+res.error.message);return;}
   var wasEditing = editingJamId;
+
+  // تحديث allJams وcurJam بالبيانات الجديدة مباشرة
+  if (wasEditing) {
+    var updatedJam = {name:name, amount:amount, start_month:start, members:members};
+    allJams = allJams.map(function(j){
+      if (j.id == wasEditing) return Object.assign({}, j, updatedJam);
+      return j;
+    });
+    if (curJam && curJam.id == wasEditing) curJam = Object.assign({}, curJam, updatedJam);
+  }
+
   toast(wasEditing ? 'تم التعديل ✓' : 'تم إنشاء الجمعية ✓');
   editingJamId = null;
   isEdit = false;
