@@ -275,8 +275,8 @@ tr:nth-child(even) td{background:#FAFAF8}
         </div>
         <div class="fblock-body">
           <div class="field"><label class="flabel">الاسم</label><input class="finput" id="f-name" type="text" placeholder="جمعية 2025" autocomplete="off"></div>
-          <div class="field"><label class="flabel">المبلغ الشهري للعضو</label><input class="finput" id="f-amount" type="number" min="1" inputmode="numeric" placeholder="500"></div>
-          <div class="field">
+          <div class="field" id="field-amount"><label class="flabel">المبلغ الشهري للعضو</label><input class="finput" id="f-amount" type="number" min="1" inputmode="numeric" placeholder="500"></div>
+          <div class="field" id="field-start">
             <label class="flabel">شهر البداية (هجري)</label>
             <div style="display:flex;gap:8px">
               <select class="finput" id="f-hijri-month" style="flex:1.4">
@@ -569,6 +569,9 @@ function nav(p) {
       document.getElementById('f-hijri-month').value='';
       populateHijriYears();
       document.getElementById('btn-create').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
+      // إظهار الحقول عند الإنشاء
+      document.getElementById('field-amount').style.display = 'block';
+      document.getElementById('field-start').style.display = 'block';
     }
     setTop('جمعية جديدة','',false);
   }
@@ -715,12 +718,15 @@ function delMbr(i){mbrs.splice(i,1);renderMembers();}
 
 async function createJam() {
   var name = document.getElementById('f-name').value.trim();
-  var amount = parseFloat(document.getElementById('f-amount').value);
-  var start = getStartMonth();
+  var isEditing = !!editingJamId;
+  // عند التعديل: نحتفظ بالمبلغ والشهر من البيانات الأصلية
+  var origJam = isEditing ? allJams.find(function(j){ return j.id == editingJamId; }) : null;
+  var amount = isEditing ? (origJam ? origJam.amount : 0) : parseFloat(document.getElementById('f-amount').value);
+  var start  = isEditing ? (origJam ? origJam.start_month : '') : getStartMonth();
   var members = mbrs.map(function(m){return m.trim();}).filter(Boolean);
   if (!name){toast('أدخل اسم الجمعية');return;}
-  if (!amount||amount<=0){toast('أدخل مبلغاً صحيحاً');return;}
-  if (!start){toast('اختر شهر البداية الهجري');return;}
+  if (!isEditing && (!amount||amount<=0)){toast('أدخل مبلغاً صحيحاً');return;}
+  if (!isEditing && !start){toast('اختر شهر البداية الهجري');return;}
   if (members.length<2){toast('أضف عضوين على الأقل');return;}
   var btn = document.getElementById('btn-create');
   btn.disabled = true; btn.textContent = 'جاري الحفظ...';
@@ -763,6 +769,9 @@ async function createJam() {
   document.getElementById('f-amount').value='';
   document.getElementById('f-hijri-month').value='';
   populateHijriYears();
+  // إعادة إظهار الحقول
+  document.getElementById('field-amount').style.display = 'block';
+  document.getElementById('field-start').style.display = 'block';
   document.getElementById('bn-home').classList.add('on');
   document.getElementById('bn-create').classList.remove('on');
   showPage('home');
@@ -1025,6 +1034,9 @@ function editJam() {
   }
   mbrs = j.members.slice(); renderMembers();
   editingJamId = j.id;
+  // إخفاء حقول المبلغ وشهر البداية عند التعديل
+  document.getElementById('field-amount').style.display = 'none';
+  document.getElementById('field-start').style.display = 'none';
   nav('create');
   document.getElementById('btn-create').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>حفظ التعديلات';
 }
