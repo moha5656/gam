@@ -735,14 +735,21 @@ async function createJam() {
   btn.disabled = false;
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
   if (res.error){toast('خطأ: '+res.error.message);return;}
-  toast(editingJamId ? 'تم التعديل ✓' : 'تم إنشاء الجمعية ✓');
+  var wasEditing = editingJamId;
+  toast(wasEditing ? 'تم التعديل ✓' : 'تم إنشاء الجمعية ✓');
   editingJamId = null;
+  isEdit = false;
   mbrs=['','','']; renderMembers();
   document.getElementById('f-name').value='';
   document.getElementById('f-amount').value='';
   document.getElementById('f-hijri-month').value='';
   populateHijriYears();
-  nav('home');
+  document.getElementById('bn-home').classList.add('on');
+  document.getElementById('bn-create').classList.remove('on');
+  showPage('home');
+  setTop('جمعيتي','',false);
+  window.scrollTo(0,0);
+  loadHome();
 }
 
 /* ── DETAIL ── */
