@@ -160,6 +160,15 @@ tr:nth-child(even) td{background:#FAFAF8}
 .btn-del-confirm{width:100%;padding:15px;border:none;border-radius:var(--r);background:var(--red);color:var(--white);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
 .btn-del-cancel{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
 
+/* ── MONTH COMPLETE ALERT ── */
+#month-complete-alert{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);z-index:900;background:var(--white);border:1.5px solid #00C9A7;border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.13);max-width:340px;width:calc(100% - 32px);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+#month-complete-alert.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all}
+.mca-icon{font-size:26px;flex-shrink:0}
+.mca-body{flex:1;min-width:0}
+.mca-title{font-size:13px;font-weight:700;color:var(--ink)}
+.mca-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+.mca-btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.mca-close{background:none;border:none;color:var(--ink3);font-size:14px;cursor:pointer;padding:4px;flex-shrink:0;line-height:1}
 /* ── AUTH ── */
 #pg-loading{position:fixed;inset:0;z-index:600;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #pg-loading .spin{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
@@ -878,6 +887,40 @@ async function saveEdit() {
   if (res.error){toast('خطأ في الحفظ');if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>حفظ';}return;}
   changed.forEach(function(c){payCache[c.month_index+'_'+c.member_index]=c.paid;});
   isEdit=false;editCache={};toast('تم الحفظ ✓');renderDetail();
+
+  // تحقق من اكتمال أي شهر بعد الحفظ
+  if (curJam && currentUser && curJam.created_by === currentUser.id) {
+    var j = curJam, months = buildMonths(j);
+    months.forEach(function(mo, mi) {
+      var allPaid = j.members.every(function(_, xi) {
+        return xi === mo.receiver || payCache[mi+'_'+xi];
+      });
+      if (allPaid) {
+        var label = hLabel(mo.year, mo.month);
+        // تأخير بسيط حتى لا يتعارض مع toast الحفظ
+        setTimeout(function() { showMonthCompleteAlert(label); }, 900);
+      }
+    });
+  }
+}
+
+/* ── MONTH COMPLETE ALERT ── */
+function showMonthCompleteAlert(monthLabel) {
+  var existing = document.getElementById('month-complete-alert');
+  if (existing) existing.remove();
+  var el = document.createElement('div');
+  el.id = 'month-complete-alert';
+  el.innerHTML =
+    '<div class="mca-icon">🎉</div>' +
+    '<div class="mca-body">' +
+      '<div class="mca-title">اكتملت دفعات ' + monthLabel + '</div>' +
+      '<div class="mca-sub">جميع الأعضاء دفعوا هذا الشهر</div>' +
+    '</div>' +
+    '<button class="mca-btn" onclick="printPDF();document.getElementById(\'month-complete-alert\').remove()">تحميل PDF</button>' +
+    '<button class="mca-close" onclick="this.parentElement.remove()">✕</button>';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.classList.add('on'); }, 10);
+  setTimeout(function(){ if(el.parentElement){el.classList.remove('on');setTimeout(function(){el.remove();},400);} }, 8000);
 }
 
 /* ── PRINT PDF ── */
