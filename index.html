@@ -728,6 +728,14 @@ async function createJam() {
   var res;
   if (editingJamId) {
     res = await sb.from('jamiya').update({name:name,amount:amount,start_month:start,members:members}).eq('id',editingJamId).select();
+    console.log('UPDATE result:', JSON.stringify(res));
+    // إذا رجع بدون خطأ لكن data فارغ = RLS مانع التعديل
+    if (!res.error && (!res.data || res.data.length === 0)) {
+      toast('خطأ: لا تملك صلاحية تعديل هذه الجمعية (RLS)');
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
+      return;
+    }
   } else {
     res = await sb.from('jamiya').insert({name:name,amount:amount,start_month:start,members:members,created_by:currentUser.id,invite_code:genCode()}).select().single();
   }
