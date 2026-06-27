@@ -889,18 +889,18 @@ async function saveEdit() {
   isEdit=false;editCache={};toast('تم الحفظ ✓');renderDetail();
 
   // تحقق من اكتمال أي شهر بعد الحفظ
-  if (curJam && currentUser && curJam.created_by === currentUser.id) {
-    var j = curJam, months = buildMonths(j);
-    months.forEach(function(mo, mi) {
-      var allPaid = j.members.every(function(_, xi) {
-        return xi === mo.receiver || payCache[mi+'_'+xi];
-      });
-      if (allPaid) {
-        var label = hLabel(mo.year, mo.month);
-        // تأخير بسيط حتى لا يتعارض مع toast الحفظ
-        setTimeout(function() { showMonthCompleteAlert(label); }, 900);
-      }
+  var j = curJam, months = buildMonths(j);
+  var completedMonths = [];
+  months.forEach(function(mo, mi) {
+    var allPaid = j.members.every(function(_, xi) {
+      return xi === mo.receiver || payCache[mi+'_'+xi];
     });
+    if (allPaid) completedMonths.push(hLabel(mo.year, mo.month));
+  });
+  if (completedMonths.length > 0) {
+    setTimeout(function() {
+      showMonthCompleteAlert(completedMonths[completedMonths.length - 1]);
+    }, 900);
   }
 }
 
