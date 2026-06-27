@@ -3,558 +3,1046 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>جمعيتي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --ink:#0D0D0D;
-  --ink2:#3D3D3D;
-  --ink3:#888;
-  --paper:#F5F4F0;
-  --white:#FFFFFF;
-  --teal:#00C9A7;
-  --teal-dark:#009E84;
-  --teal-bg:#E6FAF7;
-  --red:#FF4757;
-  --red-bg:#FFF0F1;
-  --amber:#FFAA00;
+  --ink:#0D0D0D;--ink3:#888;
+  --paper:#F5F4F0;--white:#FFF;
+  --teal:#00C9A7;--teal-dk:#009E84;--teal-bg:#E6FAF7;
+  --red:#FF4757;--red-bg:#FFF0F1;
   --amber-bg:#FFF8E6;
-  --line:#E8E6E0;
-  --r:16px;
-  --rs:10px;
+  --line:#E8E6E0;--r:16px;--rs:10px;
 }
-html,body{height:100%;overflow:hidden}
-body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--paper);color:var(--ink);display:flex;flex-direction:column}
-
-/* ── SHELL ── */
-.shell{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;width:100%;position:relative}
-
-/* ── TOPBAR ── */
-.topbar{
-  padding:16px 20px 12px;
-  display:flex;align-items:center;gap:12px;
-  background:var(--paper);
-  flex-shrink:0;
-}
-.topbar-back{
-  width:38px;height:38px;border-radius:50%;background:var(--white);
-  border:1px solid var(--line);display:none;align-items:center;justify-content:center;
-  cursor:pointer;font-size:18px;color:var(--ink);flex-shrink:0;
-}
-.topbar-back.on{display:flex}
-.topbar-title{font-size:20px;font-weight:700;color:var(--ink);flex:1}
-.topbar-sub{font-size:13px;color:var(--ink3);margin-top:1px}
-
-/* ── SCROLL BODY ── */
-.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 16px 90px}
-
-/* ── BOTTOM NAV ── */
-.bottomnav{
-  display:flex;background:var(--white);border-top:1px solid var(--line);
-  flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);
-}
-.bnav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:10px 0;cursor:pointer;border:none;background:none;
-  font-family:'IBM Plex Sans Arabic',sans-serif;
-  font-size:10px;font-weight:600;color:var(--ink3);
-  transition:color .15s;letter-spacing:.3px;
-}
-.bnav-item svg{width:22px;height:22px;stroke-width:1.8;transition:transform .2s}
-.bnav-item.on{color:var(--teal-dark)}
-.bnav-item.on svg{transform:scale(1.1)}
-.bnav-dot{
-  width:6px;height:6px;border-radius:50%;background:var(--teal);
-  margin-top:2px;display:none;
-}
-.bnav-item.on .bnav-dot{display:block}
-
-/* ── PAGES ── */
+html,body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--paper);color:var(--ink)}
+.shell{max-width:430px;width:100%;margin:0 auto}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 16px 10px;display:flex;align-items:center;gap:10px;background:var(--paper);max-width:430px;margin:0 auto;border-bottom:1px solid var(--line)}
+.topbar-spacer{height:58px}
+.tb-back{width:36px;height:36px;border-radius:50%;background:var(--white);border:1px solid var(--line);display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--ink)}
+.tb-back.on{display:flex}
+.tb-title{font-size:19px;font-weight:700;color:var(--ink);flex:1}
+.tb-sub{font-size:12px;color:var(--ink3)}
+.body{overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 14px 20px;min-height:100vh}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;background:var(--white);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bnav-spacer{height:calc(70px + env(safe-area-inset-bottom,0px))}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;border:none;background:none;cursor:pointer;font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:600;color:var(--ink3);transition:color .15s}
+.bnav-btn svg{width:22px;height:22px}
+.bnav-btn.on{color:var(--teal-dk)}
+.bnav-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);display:none;margin-top:1px}
+.bnav-btn.on .bnav-dot{display:block}
 .page{display:none}.page.on{display:block}
-
-/* ─────── HOME PAGE ─────── */
-.kpi-strip{
-  background:var(--ink);border-radius:24px;
-  padding:24px 20px;margin-bottom:20px;
-  position:relative;overflow:hidden;
-}
-.kpi-strip::before{
-  content:'';position:absolute;width:200px;height:200px;border-radius:50%;
-  background:rgba(0,201,167,.12);top:-60px;left:-60px;
-}
-.kpi-eyebrow{font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:1px;margin-bottom:8px}
-.kpi-num{font-size:48px;font-weight:700;color:var(--white);line-height:1;margin-bottom:4px}
-.kpi-desc{font-size:13px;color:rgba(255,255,255,.55)}
-.kpi-chips{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-.kpi-chip{
-  background:rgba(255,255,255,.1);border-radius:99px;
-  padding:5px 12px;font-size:12px;font-weight:500;color:rgba(255,255,255,.75);
-}
-.kpi-chip span{color:var(--teal);font-weight:700}
-
-.sec-label{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.8px;margin-bottom:10px}
-
-.jam-row{
-  background:var(--white);border-radius:var(--r);padding:16px;
-  margin-bottom:10px;cursor:pointer;
-  border:1px solid var(--line);
-  transition:transform .12s,box-shadow .12s;
-  position:relative;overflow:hidden;
-}
-.jam-row:active{transform:scale(.985)}
-.jam-row-accent{
-  position:absolute;top:0;right:0;width:4px;height:100%;
-  background:var(--teal);border-radius:0 var(--r) var(--r) 0;
-}
-.jam-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.jam-row-name{font-size:15px;font-weight:700;color:var(--ink)}
-.jam-row-pill{
-  background:var(--teal-bg);color:var(--teal-dark);
-  font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;
-}
-.jam-row-meta{display:flex;gap:16px;margin-bottom:12px}
-.jam-meta-item{display:flex;flex-direction:column;gap:1px}
-.jam-meta-val{font-size:14px;font-weight:700;color:var(--ink)}
-.jam-meta-key{font-size:10px;color:var(--ink3);font-weight:500}
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:12px;color:var(--ink3);font-size:14px}
+.spin{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.kpi{background:var(--ink);border-radius:20px;padding:20px 18px;margin-bottom:16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(0,201,167,.1);top:-50px;left:-50px}
+.kpi-eye{font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1.2px;margin-bottom:6px}
+.kpi-n{font-size:44px;font-weight:700;color:var(--white);line-height:1;margin-bottom:3px}
+.kpi-d{font-size:12px;color:rgba(255,255,255,.5)}
+.kpi-chips{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap}
+.kpi-chip{background:rgba(255,255,255,.1);border-radius:99px;padding:4px 11px;font-size:11px;color:rgba(255,255,255,.7)}
+.kpi-chip b{color:var(--teal)}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:.8px;margin-bottom:9px}
+.jcard{background:var(--white);border-radius:var(--r);padding:15px;margin-bottom:10px;cursor:pointer;border:1px solid var(--line);position:relative;overflow:hidden;transition:transform .12s;-webkit-user-select:none;user-select:none}
+.jcard:active{transform:scale(.98)}
+.jcard-bar{position:absolute;top:0;right:0;width:4px;height:100%;background:var(--teal)}
+.jcard-opts{width:32px;height:32px;border-radius:8px;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--ink3);font-size:18px;font-weight:700;line-height:1;letter-spacing:1px}
+.jcard-opts:active{background:var(--line)}
+.jcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.jcard-name{font-size:15px;font-weight:700}
+.jcard-pill{background:var(--teal-bg);color:var(--teal-dk);font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.jcard-meta{display:flex;gap:14px;margin-bottom:11px}
+.jmeta-v{font-size:14px;font-weight:700}
+.jmeta-k{font-size:10px;color:var(--ink3);font-weight:500;margin-top:1px}
 .pbar{height:4px;background:var(--line);border-radius:99px;overflow:hidden}
-.pbar-fill{height:100%;background:var(--teal);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.pbar-row{display:flex;justify-content:space-between;margin-top:6px}
-.pbar-pct{font-size:11px;font-weight:700;color:var(--teal-dark)}
-.pbar-frac{font-size:11px;color:var(--ink3)}
-
-.empty-state{text-align:center;padding:60px 20px 40px}
-.empty-circle{
-  width:72px;height:72px;border-radius:50%;background:var(--white);
-  border:1px solid var(--line);margin:0 auto 16px;
-  display:flex;align-items:center;justify-content:center;
-}
-.empty-circle svg{width:32px;height:32px;stroke:var(--ink3);stroke-width:1.5}
-.empty-h{font-size:16px;font-weight:700;margin-bottom:6px}
+.pbar-f{height:100%;background:var(--teal);border-radius:99px;transition:width .4s}
+.pbar-row{display:flex;justify-content:space-between;margin-top:5px}
+.pbar-pct{font-size:11px;font-weight:700;color:var(--teal-dk)}
+.pbar-fr{font-size:11px;color:var(--ink3)}
+.empty{text-align:center;padding:50px 20px}
+.empty-c{width:68px;height:68px;border-radius:50%;background:var(--white);border:1px solid var(--line);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
+.empty-c svg{width:30px;height:30px;stroke:var(--ink3);stroke-width:1.5;fill:none}
+.empty-h{font-size:16px;font-weight:700;margin-bottom:5px}
 .empty-p{font-size:13px;color:var(--ink3);line-height:1.6}
-
-/* ─────── CREATE PAGE ─────── */
-.form-block{background:var(--white);border-radius:var(--r);border:1px solid var(--line);margin-bottom:14px;overflow:hidden}
-.form-block-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
-.form-block-icon{
-  width:30px;height:30px;border-radius:var(--rs);background:var(--teal-bg);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.form-block-icon svg{width:16px;height:16px;stroke:var(--teal-dark);stroke-width:2}
-.form-block-title{font-size:13px;font-weight:700;color:var(--ink)}
-.form-body{padding:16px}
-.field{margin-bottom:14px}
-.field:last-child{margin-bottom:0}
-.field-label{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.5px;display:block;margin-bottom:6px}
-.field input{
-  width:100%;padding:13px 14px;
-  border:1px solid var(--line);border-radius:var(--rs);
-  background:var(--paper);color:var(--ink);
-  font-size:15px;font-family:'IBM Plex Sans Arabic',sans-serif;
-  outline:none;transition:border-color .15s,background .15s;
-}
-.field input:focus{border-color:var(--teal);background:var(--white)}
-.field input::placeholder{color:var(--ink3);font-size:14px}
-
-.member-add-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.member-idx{
-  width:28px;height:28px;border-radius:8px;background:var(--paper);
-  border:1px solid var(--line);flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--ink3);
-}
-.member-add-row input{
-  flex:1;padding:11px 12px;
-  border:1px solid var(--line);border-radius:var(--rs);
-  background:var(--paper);color:var(--ink);
-  font-size:14px;font-family:'IBM Plex Sans Arabic',sans-serif;
-  outline:none;transition:border-color .15s;
-}
-.member-add-row input:focus{border-color:var(--teal);background:var(--white)}
-.del-m{
-  width:34px;height:34px;border-radius:8px;background:var(--red-bg);
-  border:1px solid #FFD0D4;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;flex-shrink:0;
-}
-.del-m svg{width:15px;height:15px;stroke:var(--red);stroke-width:2}
-
-.btn-ghost{
-  width:100%;padding:12px;border:1px dashed var(--teal);border-radius:var(--rs);
-  background:var(--teal-bg);color:var(--teal-dark);
-  font-size:13px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
-  margin-bottom:14px;
-}
-.btn-ghost svg{width:16px;height:16px;stroke:currentColor;stroke-width:2}
-.btn-solid{
-  width:100%;padding:16px;border:none;border-radius:var(--r);
-  background:var(--ink);color:var(--white);
-  font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;
-  cursor:pointer;transition:background .15s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn-solid svg{width:18px;height:18px;stroke:var(--white);stroke-width:2}
-.btn-solid:active{background:#222}
-
-/* ─────── DETAIL PAGE ─────── */
-.detail-top{
-  background:var(--ink);border-radius:24px;
-  padding:24px 20px;margin-bottom:16px;
-}
-.detail-name{font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px}
-.detail-dates{font-size:13px;color:rgba(255,255,255,.5)}
-.stats-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.stat-box{
-  background:var(--white);border:1px solid var(--line);border-radius:var(--r);
-  padding:14px 16px;
-}
-.stat-box-num{font-size:24px;font-weight:700;color:var(--ink)}
-.stat-box-lbl{font-size:11px;color:var(--ink3);font-weight:600;margin-top:2px}
-.stat-box-teal .stat-box-num{color:var(--teal-dark)}
-
-.table-block{background:var(--white);border-radius:var(--r);border:1px solid var(--line);overflow:hidden;margin-bottom:16px}
-.table-head-row{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-.table-head-title{font-size:13px;font-weight:700;color:var(--ink)}
-.table-head-hint{font-size:11px;color:var(--ink3)}
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse}
-th{
-  background:var(--paper);padding:10px 8px;text-align:center;
-  font-size:11px;font-weight:700;color:var(--ink3);
-  border-bottom:1px solid var(--line);letter-spacing:.3px;
-  white-space:nowrap;
-}
-th:first-child{text-align:right;padding-right:14px;min-width:80px}
-td{padding:12px 8px;text-align:center;border-bottom:1px solid var(--line);font-size:13px}
-td:first-child{text-align:right;padding-right:14px;font-weight:600;color:var(--ink);white-space:nowrap;font-size:12px}
+.fblock{background:var(--white);border-radius:var(--r);border:1px solid var(--line);margin-bottom:12px;overflow:hidden}
+.fblock-head{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.fblock-icon{width:28px;height:28px;border-radius:8px;background:var(--teal-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fblock-icon svg{width:15px;height:15px;stroke:var(--teal-dk);stroke-width:2;fill:none}
+.fblock-title{font-size:13px;font-weight:700}
+.fblock-body{padding:14px}
+.field{margin-bottom:13px}.field:last-child{margin-bottom:0}
+.flabel{font-size:11px;font-weight:700;color:var(--ink3);display:block;margin-bottom:5px;letter-spacing:.4px}
+.finput{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:var(--rs);background:var(--paper);color:var(--ink);font-size:15px;font-family:'IBM Plex Sans Arabic',sans-serif;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .15s}
+.finput:focus{border-color:var(--teal);background:var(--white)}
+.finput::placeholder{color:var(--ink3);font-size:14px}
+.mlist{display:flex;flex-direction:column;gap:7px;margin-bottom:11px}
+.mrow{display:flex;gap:7px;align-items:center}
+.midx{width:27px;height:27px;border-radius:7px;background:var(--paper);border:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink3)}
+.mrow input{flex:1;padding:10px 11px;border:1.5px solid var(--line);border-radius:var(--rs);background:var(--paper);color:var(--ink);font-size:14px;font-family:'IBM Plex Sans Arabic',sans-serif;outline:none;-webkit-appearance:none;transition:border-color .15s}
+.mrow input:focus{border-color:var(--teal);background:var(--white)}
+.mdel{width:33px;height:33px;border-radius:8px;background:var(--red-bg);border:1px solid #FFD0D4;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.mdel svg{width:14px;height:14px;stroke:var(--red);stroke-width:2;fill:none}
+.btn-add{width:100%;padding:11px;border:1.5px dashed var(--teal);border-radius:var(--rs);background:var(--teal-bg);color:var(--teal-dk);font-size:13px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:13px}
+.btn-add svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-main{width:100%;padding:15px;border:none;border-radius:var(--r);background:var(--ink);color:var(--white);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;-webkit-appearance:none;transition:opacity .15s}
+.btn-main:disabled{opacity:.5;cursor:not-allowed}
+.btn-main svg{width:17px;height:17px;stroke:var(--white);stroke-width:2;fill:none}
+.dtop{background:var(--ink);border-radius:20px;padding:22px 18px;margin-bottom:14px}
+.dtop-name{font-size:21px;font-weight:700;color:var(--white);margin-bottom:3px}
+.dtop-sub{font-size:12px;color:rgba(255,255,255,.45)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.sbox{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.sbox-n{font-size:22px;font-weight:700;color:var(--ink)}
+.sbox-l{font-size:10px;color:var(--ink3);font-weight:600;margin-top:2px}
+.sbox.teal .sbox-n{color:var(--teal-dk)}
+.tblock{background:var(--white);border-radius:var(--r);border:1px solid var(--line);overflow:hidden;margin-bottom:14px}
+.thead-row{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.thead-t{font-size:13px;font-weight:700;flex:1}
+.btn-edit{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--white);color:var(--ink);font-size:12px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;white-space:nowrap}
+.btn-edit svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-save{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:99px;border:none;background:var(--teal);color:var(--white);font-size:12px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;white-space:nowrap}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-save svg{width:13px;height:13px;stroke:var(--white);stroke-width:2.5;fill:none}
+.btn-cancel{display:flex;align-items:center;gap:5px;padding:7px 11px;border-radius:99px;border:1.5px solid var(--line);background:var(--white);color:var(--ink3);font-size:12px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;white-space:nowrap}
+.thead-actions{display:flex;gap:6px;align-items:center}
+.edit-banner{background:var(--amber-bg);border-bottom:1px solid #FFE0A0;padding:8px 15px;font-size:12px;color:#8a6000;font-weight:600;display:none;align-items:center;gap:6px}
+.edit-banner.on{display:flex}
+.edit-banner svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:220px}
+th{background:var(--paper);padding:9px 7px;text-align:center;font-size:10px;font-weight:700;color:var(--ink3);border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child{text-align:right;padding-right:13px;min-width:90px}
+td{padding:11px 7px;text-align:center;border-bottom:1px solid var(--line);font-size:12px}
+td:first-child{text-align:right;padding-right:13px;font-weight:600;white-space:nowrap;font-size:11px}
 tr:last-child td{border-bottom:none}
 tr:nth-child(even) td{background:#FAFAF8}
-.pay-cell{cursor:pointer;font-size:22px;line-height:1;transition:transform .1s;display:block}
-.pay-cell:active{transform:scale(.8)}
-.rcv-badge{
-  background:var(--amber-bg);color:#996600;
-  font-size:10px;font-weight:700;padding:3px 7px;
-  border-radius:6px;border:1px solid #FFE0A0;display:inline-block;
-}
-.ok-dot{
-  display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:var(--teal);margin-left:5px;vertical-align:2px;
-}
+.pcell{font-size:20px;line-height:1;display:block;padding:4px;border-radius:6px}
+.pcell.view-mode{cursor:default}
+.pcell.edit-mode{cursor:pointer}
+.pcell.edit-mode:active{background:rgba(0,201,167,.15)}
+.pcell.changed{background:rgba(0,201,167,.12)}
+.rcv{background:var(--amber-bg);color:#8a6000;font-size:10px;font-weight:700;padding:3px 6px;border-radius:5px;border:1px solid #ffd97d;display:inline-block;white-space:nowrap}
+.ok-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-left:4px;vertical-align:2px}
+.btn-print{width:100%;padding:13px;border-radius:var(--r);background:var(--teal-bg);border:1px solid #99EAD8;color:var(--teal-dk);font-size:14px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;-webkit-appearance:none}
+.btn-print svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-del{width:100%;padding:13px;border-radius:var(--r);background:var(--red-bg);border:1px solid #FFD0D4;color:var(--red);font-size:14px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:24px;-webkit-appearance:none}
+.btn-del svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+#toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--white);padding:9px 18px;border-radius:99px;font-size:13px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;opacity:0;pointer-events:none;z-index:9999;white-space:nowrap;transition:opacity .2s,transform .2s;box-shadow:0 3px 16px rgba(0,0,0,.22)}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.btn-danger{
-  width:100%;padding:14px;border-radius:var(--r);
-  background:var(--red-bg);border:1px solid #FFD0D4;
-  color:var(--red);font-size:14px;font-weight:700;
-  font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  margin-bottom:32px;
-}
-.btn-danger svg{width:16px;height:16px;stroke:currentColor;stroke-width:2}
+/* ── ACTION SHEET (options) ── */
+.act-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s}
+.act-overlay.on{opacity:1}
+.act-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:430px;transform:translateY(20px);transition:transform .2s}
+.act-overlay.on .act-sheet{transform:translateY(0)}
+.act-jam-name{font-size:13px;font-weight:700;color:var(--ink3);text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.act-btn{width:100%;padding:14px 16px;border:none;border-radius:var(--r);background:none;font-size:15px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;display:flex;align-items:center;gap:12px;color:var(--ink);-webkit-appearance:none;margin-bottom:8px}
+.act-btn:active{background:var(--paper)}
+.act-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.act-btn.danger{color:var(--red)}
+.act-btn-cancel{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink3);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;margin-top:4px;-webkit-appearance:none}
 
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(6px);
-  background:var(--ink);color:var(--white);
-  padding:10px 20px;border-radius:99px;
-  font-size:13px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;
-  opacity:0;transition:opacity .2s,transform .2s;
-  pointer-events:none;z-index:999;white-space:nowrap;
-  box-shadow:0 4px 20px rgba(0,0,0,.25);
-}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ── DELETE OVERLAY ── */
+.del-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;transition:opacity .2s;opacity:0}
+.del-overlay.on{opacity:1}
+.del-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 18px 36px;width:100%;max-width:430px;transform:translateY(20px);transition:transform .2s}
+.del-overlay.on .del-sheet{transform:translateY(0)}
+.del-icon{width:52px;height:52px;border-radius:50%;background:var(--red-bg);border:1px solid #FFD0D4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.del-icon svg{width:22px;height:22px;stroke:var(--red);stroke-width:2;fill:none}
+.del-title{text-align:center;font-size:17px;font-weight:700;margin-bottom:6px}
+.del-sub{text-align:center;font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:22px}
+.del-sub b{color:var(--ink)}
+.del-actions{display:flex;flex-direction:column;gap:9px}
+.btn-del-confirm{width:100%;padding:15px;border:none;border-radius:var(--r);background:var(--red);color:var(--white);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
+.btn-del-cancel{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
+
+/* ── AUTH ── */
+#pg-loading{position:fixed;inset:0;z-index:600;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#pg-loading .spin{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+#pg-loading .load-logo{font-size:13px;font-weight:700;color:var(--teal-dk);letter-spacing:1.5px}
+#pg-auth{position:fixed;inset:0;z-index:500;background:var(--paper);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#pg-auth.visible{display:flex}
+#pg-auth.hidden{display:none}
+.auth-logo{font-size:13px;font-weight:700;color:var(--teal-dk);letter-spacing:1.5px;margin-bottom:6px}
+.auth-title{font-size:28px;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center}
+.auth-sub{font-size:13px;color:var(--ink3);margin-bottom:32px;text-align:center}
+.auth-box{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:22px 18px;width:100%;max-width:380px}
+.auth-tabs{display:flex;background:var(--paper);border-radius:10px;padding:3px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;border:none;border-radius:8px;background:none;font-size:13px;font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif;color:var(--ink3);cursor:pointer;transition:all .15s}
+.auth-tab.on{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.auth-err{background:var(--red-bg);border:1px solid #FFD0D4;border-radius:10px;padding:10px 13px;font-size:13px;color:var(--red);margin-bottom:14px;display:none}
+.auth-err.on{display:block}
+.tb-user{display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:99px;background:var(--paper);border:1px solid var(--line);cursor:pointer;flex-shrink:0}
+.tb-user-name{font-size:12px;font-weight:600;color:var(--ink);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-user svg{width:14px;height:14px;stroke:var(--ink3);stroke-width:2;fill:none;flex-shrink:0}
+.user-sheet-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s}
+.user-sheet-overlay.on{opacity:1}
+.user-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:430px}
+.user-sheet-email{font-size:13px;color:var(--ink3);text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.btn-logout{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--red);font-size:15px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer;-webkit-appearance:none}
+
+/* ── JOIN PAGE ── */
+.join-wrap{display:flex;flex-direction:column;align-items:center;padding:30px 0 20px}
+.join-icon{width:72px;height:72px;border-radius:50%;background:var(--teal-bg);border:1.5px solid #99EAD8;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.join-icon svg{width:30px;height:30px;stroke:var(--teal-dk);stroke-width:2;fill:none}
+.join-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.join-sub{font-size:13px;color:var(--ink3);margin-bottom:28px;text-align:center;line-height:1.6}
+.code-input-wrap{display:flex;gap:8px;width:100%;margin-bottom:14px}
+.code-input{flex:1;padding:16px;border:2px solid var(--line);border-radius:var(--r);background:var(--white);color:var(--ink);font-size:22px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;-webkit-appearance:none}
+.code-input:focus{border-color:var(--teal)}
+.code-result{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px;display:none}
+.code-result.on{display:block}
+.code-result-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.code-result-meta{font-size:12px;color:var(--ink3)}
+
+/* ── INVITE CODE in card ── */
+.invite-row{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.invite-code{font-size:13px;font-weight:700;color:var(--ink3);letter-spacing:2px;flex:1}
+.btn-copy-code{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;border:1.5px solid var(--line);background:var(--white);color:var(--ink3);font-size:11px;font-weight:700;font-family:'IBM Plex Sans Arabic',sans-serif;cursor:pointer}
+.btn-copy-code svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none}
 </style>
 </head>
 <body>
-<div class="shell">
+<!-- LOADING SCREEN -->
+<div id="pg-loading">
+  <div class="load-logo">JAMIYA</div>
+  <div class="spin"></div>
+</div>
 
-  <!-- TOPBAR -->
-  <div class="topbar" id="topbar">
-    <button class="topbar-back" id="tb-back" onclick="goBack()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
+<!-- AUTH PAGE -->
+<div id="pg-auth">
+  <div class="auth-logo">JAMIYA</div>
+  <div class="auth-title">جمعيتي</div>
+  <div class="auth-sub">تتبع جمعيتك بسهولة</div>
+  <div class="auth-box">
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">حساب جديد</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="field" id="field-name" style="display:none"><label class="flabel">الاسم الكامل</label><input class="finput" id="auth-name" type="text" placeholder="محمد علي" autocomplete="name"></div>
+    <div class="field"><label class="flabel">البريد الإلكتروني</label><input class="finput" id="auth-email" type="email" placeholder="example@email.com" autocomplete="email" inputmode="email"></div>
+    <div class="field" style="margin-bottom:18px"><label class="flabel">كلمة المرور</label><input class="finput" id="auth-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-main" id="auth-btn" onclick="doAuth()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      دخول
     </button>
-    <div>
-      <div class="topbar-title" id="tb-title">جمعيتي</div>
-      <div class="topbar-sub" id="tb-sub"></div>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="topbar">
+    <button class="tb-back" id="tb-back" onclick="goBack()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <div style="flex:1;min-width:0">
+      <div class="tb-title" id="tb-title">جمعيتي</div>
+      <div class="tb-sub" id="tb-sub"></div>
+    </div>
+    <div class="tb-user" id="tb-user" onclick="openUserSheet()" style="display:none">
+      <div class="tb-user-name" id="tb-user-name"></div>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     </div>
   </div>
-
-  <!-- BODY -->
+  <div class="topbar-spacer"></div>
   <div class="body">
-
     <!-- HOME -->
-    <div class="page on" id="page-home">
-      <div class="kpi-strip" id="kpi-strip">
-        <div class="kpi-eyebrow">JAMIYA</div>
-        <div class="kpi-num" id="kpi-num">0</div>
-        <div class="kpi-desc" id="kpi-desc">لا توجد جمعيات بعد</div>
+    <div class="page on" id="pg-home">
+      <div class="kpi">
+        <div class="kpi-eye">JAMIYA</div>
+        <div class="kpi-n" id="kpi-n">—</div>
+        <div class="kpi-d" id="kpi-d">جاري التحميل...</div>
         <div class="kpi-chips" id="kpi-chips"></div>
       </div>
-      <div class="sec-label">الجمعيات</div>
-      <div id="jam-list"></div>
-      <div id="empty-home" class="empty-state" style="display:none">
-        <div class="empty-circle">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
+      <div class="sec-lbl">الجمعيات</div>
+      <div id="jlist"><div class="loader"><div class="spin"></div>جاري التحميل...</div></div>
+      <div id="empty" class="empty" style="display:none">
+        <div class="empty-c"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="empty-h">ابدأ جمعيتك الأولى</div>
-        <div class="empty-p">أضف الأعضاء، حدد المبلغ<br>وتابع الدفعات بضغطة</div>
+        <div class="empty-p">أضف الأعضاء وحدد المبلغ<br>وتابع الدفعات بضغطة</div>
       </div>
     </div>
-
     <!-- CREATE -->
-    <div class="page" id="page-create">
-      <div class="form-block">
-        <div class="form-block-head">
-          <div class="form-block-icon">
-            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-          </div>
-          <div class="form-block-title">معلومات الجمعية</div>
+    <div class="page" id="pg-create">
+      <div class="fblock">
+        <div class="fblock-head">
+          <div class="fblock-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg></div>
+          <div class="fblock-title">معلومات الجمعية</div>
         </div>
-        <div class="form-body">
-          <div class="field"><label class="field-label">الاسم</label><input id="f-name" type="text" placeholder="جمعية 2025"></div>
-          <div class="field"><label class="field-label">المبلغ الشهري للعضو</label><input id="f-amount" type="number" min="1" inputmode="numeric" placeholder="500"></div>
-          <div class="field"><label class="field-label">شهر البداية</label><input id="f-start" type="month"></div>
+        <div class="fblock-body">
+          <div class="field"><label class="flabel">الاسم</label><input class="finput" id="f-name" type="text" placeholder="جمعية 2025" autocomplete="off"></div>
+          <div class="field"><label class="flabel">المبلغ الشهري للعضو</label><input class="finput" id="f-amount" type="number" min="1" inputmode="numeric" placeholder="500"></div>
+          <div class="field">
+            <label class="flabel">شهر البداية (هجري)</label>
+            <div style="display:flex;gap:8px">
+              <select class="finput" id="f-hijri-month" style="flex:1.4">
+                <option value="">الشهر</option>
+                <option value="1">محرم</option>
+                <option value="2">صفر</option>
+                <option value="3">ربيع الأول</option>
+                <option value="4">ربيع الآخر</option>
+                <option value="5">جمادى الأولى</option>
+                <option value="6">جمادى الآخرة</option>
+                <option value="7">رجب</option>
+                <option value="8">شعبان</option>
+                <option value="9">رمضان</option>
+                <option value="10">شوال</option>
+                <option value="11">ذو القعدة</option>
+                <option value="12">ذو الحجة</option>
+              </select>
+              <select class="finput" id="f-hijri-year" style="flex:1">
+                <option value="">السنة</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="form-block">
-        <div class="form-block-head">
-          <div class="form-block-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="form-block-title">الأعضاء — الترتيب هو ترتيب الاستلام</div>
+      <div class="fblock">
+        <div class="fblock-head">
+          <div class="fblock-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="fblock-title">الأعضاء — الترتيب هو ترتيب الاستلام</div>
         </div>
-        <div class="form-body">
-          <div id="members-list" style="margin-bottom:12px"></div>
-          <button class="btn-ghost" onclick="addMember()">
-            <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            إضافة عضو
+        <div class="fblock-body">
+          <div class="mlist" id="mlist"></div>
+          <button class="btn-add" onclick="addMember()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>إضافة عضو
           </button>
-          <button class="btn-solid" onclick="createJam()">
-            <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
-            إنشاء الجمعية
+          <button class="btn-main" id="btn-create" onclick="createJam()">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية
           </button>
         </div>
       </div>
     </div>
-
     <!-- DETAIL -->
-    <div class="page" id="page-detail"></div>
-
-  </div><!-- /body -->
-
-  <!-- BOTTOM NAV -->
-  <div class="bottomnav">
-    <button class="bnav-item on" id="bn-home" onclick="nav('home')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      الرئيسية
-      <div class="bnav-dot"></div>
-    </button>
-    <button class="bnav-item" id="bn-create" onclick="nav('create')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      جديدة
-      <div class="bnav-dot"></div>
-    </button>
+    <div class="page" id="pg-detail"></div>
+    <!-- JOIN -->
+    <div class="page" id="pg-join">
+      <div class="join-wrap">
+        <div class="join-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+        <div class="join-title">انضم لجمعية</div>
+        <div class="join-sub">أدخل كود الدعوة الذي أرسله لك منشئ الجمعية</div>
+      </div>
+      <div class="code-input-wrap">
+        <input class="code-input" id="join-code" type="text" maxlength="6" placeholder="XXXXXX" autocomplete="off" autocorrect="off" autocapitalize="characters" oninput="this.value=this.value.toUpperCase();lookupCode()">
+      </div>
+      <div class="code-result" id="code-result">
+        <div class="code-result-name" id="code-result-name"></div>
+        <div class="code-result-meta" id="code-result-meta"></div>
+      </div>
+      <button class="btn-main" id="btn-join" onclick="joinJam()" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        انضم للجمعية
+      </button>
+    </div>
   </div>
+  <div class="bnav-spacer"></div>
+  <nav class="bnav">
+    <button class="bnav-btn on" id="bn-home" onclick="nav('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      الرئيسية<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-btn" id="bn-join" onclick="nav('join')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      انضم<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-btn" id="bn-create" onclick="nav('create')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      جديدة<div class="bnav-dot"></div>
+    </button>
+  </nav>
+</div>
+<div id="act-overlay" class="act-overlay" onclick="closeOpts()">
+  <div class="act-sheet" onclick="event.stopPropagation()">
+    <div class="act-jam-name" id="act-jam-name"></div>
+    <button class="act-btn" onclick="closeOpts();editJam()">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      تعديل الجمعية
+    </button>
+    <button class="act-btn" onclick="closeOpts();shareInvite()">
+      <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      مشاركة كود الدعوة
+    </button>
+    <button class="act-btn danger" onclick="closeOpts();confirmDelete(activeJam.id,activeJam.name)">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      حذف الجمعية
+    </button>
+    <button class="act-btn-cancel" onclick="closeOpts()">إلغاء</button>
+  </div>
+</div>
+<div id="del-overlay" class="del-overlay" onclick="cancelDelete()">
+  <div class="del-sheet" onclick="event.stopPropagation()">
+    <div class="del-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div>
+    <div class="del-title">حذف الجمعية</div>
+    <div class="del-sub">هل أنت متأكد من حذف<br><b id="del-overlay-name"></b>؟<br>لا يمكن التراجع عن هذا الإجراء.</div>
+    <div class="del-actions">
+      <button class="btn-del-confirm" onclick="deleteJam()">نعم، احذف الجمعية</button>
+      <button class="btn-del-cancel" onclick="cancelDelete()">إلغاء</button>
+    </div>
+  </div>
+</div>
+<div id="user-sheet-overlay" class="user-sheet-overlay" onclick="closeUserSheet()">
+  <div class="user-sheet" onclick="event.stopPropagation()">
+    <div class="user-sheet-email" id="user-sheet-email"></div>
+    <button class="btn-logout" onclick="doLogout()">تسجيل الخروج</button>
+  </div>
+</div>
+<div id="toast"></div>
 
-</div><!-- /shell -->
-
-<div class="toast" id="toast"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-let DB = JSON.parse(localStorage.getItem('j4') || '[]');
-let mbrs = ['','',''];
-let curId = null;
+var sb = supabase.createClient(
+  'https://kypuvouvozgnebicnkty.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cHV2b3V2b3pnbmViaWNua3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDg2OTgsImV4cCI6MjA5Nzk4NDY5OH0.jiiGjkdCZOI7ZiU4oqwd1sAHWGlfuT6vTmC3isQ9c00'
+);
 
-const save = () => localStorage.setItem('j4', JSON.stringify(DB));
+/* ── AUTH STATE ── */
+var currentUser = null;
 
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('on');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2000);
+sb.auth.onAuthStateChange(function(event, session) {
+  currentUser = session ? session.user : null;
+  // إخفاء شاشة التحميل دائماً
+  var loadEl = document.getElementById('pg-loading');
+  if (loadEl) loadEl.style.display = 'none';
+
+  if (currentUser) {
+    document.getElementById('pg-auth').classList.remove('visible');
+    document.getElementById('pg-auth').classList.add('hidden');
+    var name = (currentUser.email||'').split('@')[0];
+    document.getElementById('tb-user-name').textContent = name;
+    document.getElementById('tb-user').style.display = 'flex';
+    document.getElementById('user-sheet-email').textContent = currentUser.email;
+    renderMembers();
+    populateHijriYears();
+    loadHome();
+  } else {
+    document.getElementById('pg-auth').classList.remove('hidden');
+    document.getElementById('pg-auth').classList.add('visible');
+    document.getElementById('tb-user').style.display = 'none';
+  }
+});
+
+var authMode = 'login';
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('on', mode==='login');
+  document.getElementById('tab-signup').classList.toggle('on', mode==='signup');
+  document.getElementById('field-name').style.display = mode==='signup' ? 'block' : 'none';
+  document.getElementById('auth-pass').autocomplete = mode==='login' ? 'current-password' : 'new-password';
+  document.getElementById('auth-btn').innerHTML = mode==='login'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>دخول'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>إنشاء حساب';
+  var errEl = document.getElementById('auth-err');
+  errEl.classList.remove('on');
+  errEl.style.background=''; errEl.style.borderColor=''; errEl.style.color='';
 }
 
-const MN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+async function doAuth() {
+  var email = document.getElementById('auth-email').value.trim();
+  var pass  = document.getElementById('auth-pass').value;
+  var name  = document.getElementById('auth-name').value.trim();
+  var errEl = document.getElementById('auth-err');
+  var btn   = document.getElementById('auth-btn');
+  errEl.classList.remove('on');
+  errEl.style.background=''; errEl.style.borderColor=''; errEl.style.color='';
+  if (!email || !pass) { errEl.textContent='أدخل البريد وكلمة المرور'; errEl.classList.add('on'); return; }
+  if (authMode==='signup' && !name) { errEl.textContent='أدخل اسمك الكامل'; errEl.classList.add('on'); return; }
+  btn.disabled = true; btn.textContent = '...';
+  var res = authMode==='login'
+    ? await sb.auth.signInWithPassword({email:email, password:pass})
+    : await sb.auth.signUp({email:email, password:pass, options:{data:{full_name:name}}});
+  btn.disabled = false;
+  switchAuthTab(authMode);
+  if (res.error) { errEl.textContent = translateAuthError(res.error.message); errEl.classList.add('on'); return; }
+  if (authMode==='signup' && res.data.user && !res.data.session) {
+    errEl.style.background='var(--teal-bg)'; errEl.style.borderColor='#99EAD8'; errEl.style.color='var(--teal-dk)';
+    errEl.textContent='تم إنشاء الحساب! تحقق من بريدك لتأكيد الحساب.'; errEl.classList.add('on');
+  }
+}
 
-function nav(p){
-  ['home','create'].forEach(id=>{
-    document.getElementById('bn-'+id).classList.toggle('on',id===p);
+function translateAuthError(msg) {
+  if (msg.includes('Invalid login')) return 'البريد أو كلمة المرور غير صحيحة';
+  if (msg.includes('already registered')) return 'هذا البريد مسجل مسبقاً';
+  if (msg.includes('Password should')) return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+  if (msg.includes('valid email')) return 'أدخل بريداً إلكترونياً صحيحاً';
+  return msg;
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  closeUserSheet();
+}
+
+function openUserSheet() {
+  var ov = document.getElementById('user-sheet-overlay');
+  ov.style.display = 'flex';
+  setTimeout(function(){ ov.classList.add('on'); }, 10);
+}
+
+function closeUserSheet() {
+  var ov = document.getElementById('user-sheet-overlay');
+  ov.classList.remove('on');
+  setTimeout(function(){ ov.style.display='none'; }, 200);
+}
+
+
+var HMN = ['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
+
+function toHijri(gy, gm, gd) {
+  var a = Math.floor((14-gm)/12), y = gy+4800-a, m = gm+12*a-3;
+  var jdn = gd + Math.floor((153*m+2)/5) + 365*y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400) - 32045;
+  var l = jdn-1948440+10632, n = Math.floor((l-1)/10631);
+  l = l-10631*n+354;
+  var j = Math.floor((10985-l)/5316)*Math.floor((50*l)/17719) + Math.floor(l/5670)*Math.floor((43*l)/15238);
+  l = l - Math.floor((30-j)/15)*Math.floor((17719*j)/50) - Math.floor(j/16)*Math.floor((15238*j)/43) + 29;
+  var hm = Math.floor((24*l)/709), hd = l - Math.floor((709*hm)/24), hy = 30*n+j-30;
+  return {year:hy, month:hm, day:hd};
+}
+
+function hijriToGreg(hy, hm) {
+  var jdn = Math.floor((11*hy+3)/30) + 354*hy + 30*hm - Math.floor((hm-1)/2) + 1 + 1948440 - 385;
+  var l = jdn+68569, n = Math.floor((4*l)/146097);
+  l = l - Math.floor((146097*n+3)/4);
+  var i = Math.floor((4000*(l+1))/1461001);
+  l = l - Math.floor((1461*i)/4) + 31;
+  var j = Math.floor((80*l)/2447);
+  var gd = l - Math.floor((2447*j)/80);
+  l = Math.floor(j/11);
+  var gm = j+2-12*l, gy = 100*(n-49)+i+l;
+  return {year:gy, month:gm, day:gd};
+}
+
+function hLabel(gy, gm) {
+  var h = toHijri(gy, gm, 1);
+  return HMN[h.month-1] + ' ' + h.year + ' هـ';
+}
+
+function populateHijriYears() {
+  var sel = document.getElementById('f-hijri-year');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">السنة</option>';
+  var now = new Date();
+  var cur = toHijri(now.getFullYear(), now.getMonth()+1, now.getDate());
+  for (var y = cur.year-1; y <= cur.year+5; y++) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + ' هـ';
+    if (y === cur.year) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function getStartMonth() {
+  var hm = parseInt(document.getElementById('f-hijri-month').value);
+  var hy = parseInt(document.getElementById('f-hijri-year').value);
+  if (!hm || !hy) return null;
+  var g = hijriToGreg(hy, hm);
+  var mm = g.month < 10 ? '0'+g.month : ''+g.month;
+  return g.year + '-' + mm;
+}
+
+/* ── STATE ── */
+var mbrs = ['','',''];
+var curJam = null;
+var payCache = {};
+var editCache = {};
+var isEdit = false;
+
+/* ── TOAST ── */
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._t); t._t = setTimeout(function(){t.classList.remove('on');}, 2200);
+}
+
+/* ── NAV ── */
+function nav(p) {
+  if (isEdit && !confirm('لديك تعديلات غير محفوظة، هل تريد الخروج؟')) return;
+  isEdit = false;
+  document.getElementById('bn-home').classList.toggle('on', p==='home');
+  document.getElementById('bn-join').classList.toggle('on', p==='join');
+  document.getElementById('bn-create').classList.toggle('on', p==='create');
+  showPage(p); window.scrollTo(0,0);
+  if (p==='home') { setTop('جمعيتي','',false); loadHome(); }
+  if (p==='join') { setTop('انضم لجمعية','',false); document.getElementById('join-code').value=''; resetJoinResult(); }
+  if (p==='create') {
+    if (!editingJamId) {
+      mbrs=['','','']; renderMembers();
+      document.getElementById('f-name').value='';
+      document.getElementById('f-amount').value='';
+      document.getElementById('f-hijri-month').value='';
+      populateHijriYears();
+      document.getElementById('btn-create').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
+    }
+    setTop('جمعية جديدة','',false);
+  }
+}
+
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('on');});
+  document.getElementById('pg-'+p).classList.add('on');
+  document.getElementById('tb-back').classList.toggle('on', p==='detail');
+}
+
+function setTop(t,s,b) {
+  document.getElementById('tb-title').textContent = t;
+  document.getElementById('tb-sub').textContent = s;
+  document.getElementById('tb-back').classList.toggle('on', b);
+}
+
+function goBack() {
+  if (isEdit && !confirm('لديك تعديلات غير محفوظة، هل تريد الخروج؟')) return;
+  isEdit = false; nav('home');
+}
+
+/* ── HELPERS ── */
+function parseStartMonth(start_month) {
+  // إذا كان التاريخ هجرياً (سنة أقل من 1500) حوّله إلى ميلادي
+  var parts = (start_month||'').split('-');
+  if (parts.length >= 2) {
+    var yr = parseInt(parts[0]), mo = parseInt(parts[1]);
+    if (yr > 0 && yr < 1500) {
+      // هجري → ميلادي
+      var g = hijriToGreg(yr, mo);
+      var mm = g.month < 10 ? '0'+g.month : ''+g.month;
+      return g.year + '-' + mm;
+    }
+  }
+  return start_month;
+}
+
+function buildMonths(j) {
+  var sm = parseStartMonth(j.start_month);
+  return j.members.map(function(_,i){
+    var d = new Date(sm+'-01'); d.setMonth(d.getMonth()+i);
+    return {year:d.getFullYear(), month:d.getMonth()+1, receiver:i};
   });
-  showPage(p);
-  if(p==='home'){renderHome();setTop('جمعيتي','',false)}
-  if(p==='create'){setTop('جمعية جديدة','',false)}
 }
 
-function showPage(p){
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));
-  document.getElementById('page-'+p).classList.add('on');
-  document.getElementById('tb-back').classList.toggle('on',p==='detail');
+function calcStats(j, months, cache) {
+  var total = months.length*(j.members.length-1), paid = 0;
+  months.forEach(function(mo,mi){
+    j.members.forEach(function(_,xi){
+      if (xi!==mo.receiver && cache[mi+'_'+xi]) paid++;
+    });
+  });
+  return {total:total, paid:paid, pct:total?Math.round(paid/total*100):0};
 }
-
-function setTop(title,sub,back){
-  document.getElementById('tb-title').textContent=title;
-  document.getElementById('tb-sub').textContent=sub;
-  document.getElementById('tb-back').classList.toggle('on',back);
-}
-
-function goBack(){nav('home')}
 
 /* ── HOME ── */
-function renderHome(){
-  const list=document.getElementById('jam-list');
-  const empty=document.getElementById('empty-home');
-  const kpiNum=document.getElementById('kpi-num');
-  const kpiDesc=document.getElementById('kpi-desc');
-  const kpiChips=document.getElementById('kpi-chips');
+async function loadHome() {
+  var list = document.getElementById('jlist');
+  var empty = document.getElementById('empty');
+  list.innerHTML = '<div class="loader"><div class="spin"></div>جاري التحميل...</div>';
+  empty.style.display = 'none';
 
-  kpiNum.textContent=DB.length;
-  if(!DB.length){
-    kpiDesc.textContent='لا توجد جمعيات بعد';
-    kpiChips.innerHTML='';
-    list.innerHTML='';empty.style.display='block';return;
+  // جلب الجمعيات المنشأة + الجمعيات المنضم إليها
+  var [rOwn, rMember] = await Promise.all([
+    sb.from('jamiya').select('*').eq('created_by', currentUser.id).order('created_at',{ascending:false}),
+    sb.from('jamiya_members').select('jamiya_id').eq('user_id', currentUser.id)
+  ]);
+
+  var ownJams = rOwn.data || [];
+  var memberIds = (rMember.data||[]).map(function(m){ return m.jamiya_id; });
+  var joinedJams = [];
+  if (memberIds.length) {
+    var rJoined = await sb.from('jamiya').select('*').in('id', memberIds).order('created_at',{ascending:false});
+    joinedJams = rJoined.data || [];
   }
-  const totalM=DB.reduce((a,j)=>a+j.members.length,0);
-  const totalFund=DB.reduce((a,j)=>a+(j.members.length-1)*j.amount,0);
-  kpiDesc.textContent=`${DB.length===1?'جمعية واحدة نشطة':DB.length+' جمعيات نشطة'}`;
-  kpiChips.innerHTML=`
-    <div class="kpi-chip"><span>${totalM}</span> عضو</div>
-    <div class="kpi-chip">صندوق <span>${totalFund.toLocaleString()}</span></div>`;
-  empty.style.display='none';
 
-  list.innerHTML=DB.map(j=>{
-    const paid=j.months.reduce((a,m)=>a+Object.values(m.payments).filter(Boolean).length,0);
-    const total=j.months.reduce((a)=>a+(j.members.length-1),0);
-    const pct=total?Math.round(paid/total*100):0;
-    const fund=(j.members.length-1)*j.amount;
-    return `<div class="jam-row" onclick="openDetail(${j.id})">
-      <div class="jam-row-accent"></div>
-      <div class="jam-row-top">
-        <div class="jam-row-name">${j.name}</div>
-        <div class="jam-row-pill">${j.amount.toLocaleString()} ر.س</div>
-      </div>
-      <div class="jam-row-meta">
-        <div class="jam-meta-item"><div class="jam-meta-val">${j.members.length}</div><div class="jam-meta-key">أعضاء</div></div>
-        <div class="jam-meta-item"><div class="jam-meta-val">${fund.toLocaleString()}</div><div class="jam-meta-key">الصندوق</div></div>
-        <div class="jam-meta-item"><div class="jam-meta-val">${j.months.length}</div><div class="jam-meta-key">شهراً</div></div>
-      </div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div>
-      <div class="pbar-row"><span class="pbar-pct">${pct}%</span><span class="pbar-frac">${paid}/${total} دفعة</span></div>
-    </div>`;
-  }).join('');
+  // دمج وإزالة التكرار
+  var seen = {};
+  var jams = [];
+  ownJams.concat(joinedJams).forEach(function(j){
+    if (!seen[j.id]) { seen[j.id]=true; jams.push(j); }
+  });
+
+  if (rOwn.error) { list.innerHTML = '<div class="loader">فشل التحميل — تحقق من الاتصال</div>'; return; }
+
+  document.getElementById('kpi-n').textContent = jams.length;
+  if (!jams.length) {
+    document.getElementById('kpi-d').textContent = 'لا توجد جمعيات بعد';
+    document.getElementById('kpi-chips').innerHTML = '';
+    list.innerHTML = ''; empty.style.display = 'block'; return;
+  }
+  var totalM = jams.reduce(function(a,j){return a+j.members.length;},0);
+  document.getElementById('kpi-d').textContent = jams.length===1?'جمعية واحدة نشطة':jams.length+' جمعيات نشطة';
+  document.getElementById('kpi-chips').innerHTML = '<div class="kpi-chip"><b>'+totalM+'</b> عضو</div>';
+  var bnCreate = document.getElementById('bn-create');
+  bnCreate.style.display = 'flex';
+  var ids = jams.map(function(j){return j.id;});
+  var pr = await sb.from('payments').select('*').in('jamiya_id',ids);
+  var pm = {};
+  (pr.data||[]).forEach(function(p){pm[p.jamiya_id+'_'+p.month_index+'_'+p.member_index]=p.paid;});
+  list.innerHTML = ''; empty.style.display = 'none';
+  allJams = jams;
+  jams.forEach(function(j){
+    var months = buildMonths(j);
+    var lc = {};
+    months.forEach(function(mo,mi){j.members.forEach(function(_,xi){lc[mi+'_'+xi]=pm[j.id+'_'+mi+'_'+xi]||false;});});
+    var st = calcStats(j,months,lc), fund = (j.members.length-1)*j.amount;
+    var isOwner = currentUser && j.created_by === currentUser.id;
+    var div = document.createElement('div'); div.className = 'jcard';
+    div.innerHTML = '<div class="jcard-bar"></div>'+
+      '<div class="jcard-top">'+
+        '<div class="jcard-name">'+j.name+'</div>'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<div class="jcard-pill">'+Number(j.amount).toLocaleString('ar')+' ر.س</div>'+
+          (isOwner ? '<div class="jcard-opts" id="opts-'+j.id+'" onclick="event.stopPropagation();openOpts(\''+j.id+'\',\''+j.name.replace(/'/g,"\\'")+'\')">···</div>' : '')+
+        '</div>'+
+      '</div>'+
+      '<div class="jcard-meta">'+
+        '<div><div class="jmeta-v">'+j.members.length+'</div><div class="jmeta-k">أعضاء</div></div>'+
+        '<div><div class="jmeta-v">'+fund.toLocaleString('ar')+'</div><div class="jmeta-k">الصندوق</div></div>'+
+        '<div><div class="jmeta-v">'+months.length+'</div><div class="jmeta-k">شهراً</div></div>'+
+      '</div>'+
+      '<div class="pbar"><div class="pbar-f" style="width:'+st.pct+'%"></div></div>'+
+      '<div class="pbar-row"><span class="pbar-pct">'+st.pct+'%</span><span class="pbar-fr">'+st.paid+'/'+st.total+' دفعة</span></div>';
+    div.addEventListener('click',function(){openDetail(j);});
+    list.appendChild(div);
+  });
 }
 
 /* ── CREATE ── */
-function renderMembers(){
-  document.getElementById('members-list').innerHTML=mbrs.map((m,i)=>`
-    <div class="member-add-row">
-      <div class="member-idx">${i+1}</div>
-      <input type="text" value="${m}" placeholder="اسم العضو ${i+1}" oninput="mbrs[${i}]=this.value">
-      ${mbrs.length>2?`<div class="del-m" onclick="delMbr(${i})"><svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`:''}
-    </div>`).join('');
-}
-function addMember(){mbrs.push('');renderMembers()}
-function delMbr(i){mbrs.splice(i,1);renderMembers()}
-
-function createJam(){
-  const name=document.getElementById('f-name').value.trim();
-  const amount=parseFloat(document.getElementById('f-amount').value);
-  const start=document.getElementById('f-start').value;
-  const members=mbrs.map(m=>m.trim()).filter(Boolean);
-  if(!name){toast('أدخل اسم الجمعية');return}
-  if(!amount||amount<=0){toast('أدخل مبلغاً صحيحاً');return}
-  if(!start){toast('اختر شهر البداية');return}
-  if(members.length<2){toast('أضف عضوين على الأقل');return}
-  const months=members.map((_,i)=>{
-    const d=new Date(start+'-01');d.setMonth(d.getMonth()+i);
-    return{year:d.getFullYear(),month:d.getMonth()+1,receiver:i,payments:{}};
+function renderMembers() {
+  var html = '';
+  mbrs.forEach(function(m,i){
+    html += '<div class="mrow"><div class="midx">'+(i+1)+'</div>'+
+      '<input type="text" value="'+m+'" placeholder="اسم العضو '+(i+1)+'" oninput="mbrs['+i+']=this.value" autocomplete="off">'+
+      (mbrs.length>2?'<div class="mdel" onclick="delMbr('+i+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>':'')+
+      '</div>';
   });
-  DB.push({id:Date.now(),name,amount,start,members,months});
-  save();
-  mbrs=['','',''];renderMembers();
+  document.getElementById('mlist').innerHTML = html;
+}
+function addMember(){mbrs.push('');renderMembers();}
+function delMbr(i){mbrs.splice(i,1);renderMembers();}
+
+async function createJam() {
+  var name = document.getElementById('f-name').value.trim();
+  var amount = parseFloat(document.getElementById('f-amount').value);
+  var start = getStartMonth();
+  var members = mbrs.map(function(m){return m.trim();}).filter(Boolean);
+  if (!name){toast('أدخل اسم الجمعية');return;}
+  if (!amount||amount<=0){toast('أدخل مبلغاً صحيحاً');return;}
+  if (!start){toast('اختر شهر البداية الهجري');return;}
+  if (members.length<2){toast('أضف عضوين على الأقل');return;}
+  var btn = document.getElementById('btn-create');
+  btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+
+  var res;
+  if (editingJamId) {
+    res = await sb.from('jamiya').update({name:name,amount:amount,start_month:start,members:members}).eq('id',editingJamId).select().single();
+  } else {
+    res = await sb.from('jamiya').insert({name:name,amount:amount,start_month:start,members:members,created_by:currentUser.id,invite_code:genCode()}).select().single();
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>إنشاء الجمعية';
+  if (res.error){toast('خطأ: '+res.error.message);return;}
+  toast(editingJamId ? 'تم التعديل ✓' : 'تم إنشاء الجمعية ✓');
+  editingJamId = null;
+  mbrs=['','','']; renderMembers();
   document.getElementById('f-name').value='';
   document.getElementById('f-amount').value='';
-  document.getElementById('f-start').value='';
-  toast('تم إنشاء الجمعية ✓');
+  document.getElementById('f-hijri-month').value='';
+  populateHijriYears();
   nav('home');
 }
 
 /* ── DETAIL ── */
-function openDetail(id){
-  curId=id;
-  const j=DB.find(x=>x.id===id);
-  ['bn-home','bn-create'].forEach(b=>document.getElementById(b).classList.remove('on'));
-  showPage('detail');
-  const startD=new Date(j.start+'-01');
-  setTop(j.name,MN[startD.getMonth()]+' '+startD.getFullYear(),true);
-  renderDetail(j);
+async function openDetail(j) {
+  curJam = j; isEdit = false;
+  document.getElementById('bn-home').classList.remove('on');
+  document.getElementById('bn-create').classList.remove('on');
+  var sd = new Date(parseStartMonth(j.start_month)+'-01');
+  setTop(j.name, hLabel(sd.getFullYear(),sd.getMonth()+1), true);
+  showPage('detail'); window.scrollTo(0,0);
+  document.getElementById('pg-detail').innerHTML = '<div class="loader"><div class="spin"></div>جاري التحميل...</div>';
+  var res = await sb.from('payments').select('*').eq('jamiya_id',j.id);
+  payCache = {};
+  (res.data||[]).forEach(function(p){payCache[p.month_index+'_'+p.member_index]=p.paid;});
+  renderDetail();
 }
 
-function renderDetail(j){
-  const paid=j.months.reduce((a,m)=>a+Object.values(m.payments).filter(Boolean).length,0);
-  const total=j.months.reduce((a)=>a+(j.members.length-1),0);
-  const pct=total?Math.round(paid/total*100):0;
-  const fund=(j.members.length-1)*j.amount;
-  const startD=new Date(j.start+'-01');
-  const endD=new Date(j.start+'-01');endD.setMonth(endD.getMonth()+j.months.length-1);
+function renderDetail() {
+  var j = curJam, months = buildMonths(j);
+  var fund = (j.members.length-1)*j.amount;
+  var dc = isEdit ? editCache : payCache;
+  var st = calcStats(j,months,dc);
+  var sd = new Date(parseStartMonth(j.start_month)+'-01');
+  var ed = new Date(parseStartMonth(j.start_month)+'-01'); ed.setMonth(ed.getMonth()+months.length-1);
 
-  const tblRows=j.months.map((mo,mi)=>{
-    const allDone=j.members.every((_,xi)=>xi===mo.receiver||mo.payments[xi]);
-    const label=MN[mo.month-1]+' '+mo.year;
-    return `<tr>
-      <td>${allDone?'<span class="ok-dot"></span>':''}${label}</td>
-      ${j.members.map((_,xi)=>{
-        if(xi===mo.receiver) return `<td><span class="rcv-badge">مستلم</span></td>`;
-        const p=mo.payments[xi];
-        return `<td><span class="pay-cell" onclick="togglePay(${j.id},${mi},${xi})">${p?'✅':'⬜'}</span></td>`;
-      }).join('')}
-    </tr>`;
-  }).join('');
+  var rows = '';
+  months.forEach(function(mo,mi){
+    var allDone = j.members.every(function(_,xi){return xi===mo.receiver||dc[mi+'_'+xi];});
+    var label = (allDone?'<span class="ok-dot"></span>':'')+hLabel(mo.year,mo.month);
+    var cells = '';
+    j.members.forEach(function(_,xi){
+      if (xi===mo.receiver){cells+='<td><span class="rcv">مستلم</span></td>';return;}
+      var paid = dc[mi+'_'+xi];
+      var changed = isEdit && (editCache[mi+'_'+xi] !== (payCache[mi+'_'+xi]||false));
+      var cls = 'pcell '+(isEdit?'edit-mode'+(changed?' changed':''):'view-mode');
+      var oc = isEdit?' onclick="toggleEdit('+mi+','+xi+')"':'';
+      cells += '<td><span class="'+cls+'" id="pc-'+mi+'-'+xi+'"'+oc+'>'+(paid?'✅':'⬜')+'</span></td>';
+    });
+    rows += '<tr><td>'+label+'</td>'+cells+'</tr>';
+  });
 
-  document.getElementById('page-detail').innerHTML=`
-    <div class="detail-top">
-      <div class="detail-name">${j.name}</div>
-      <div class="detail-dates">${MN[startD.getMonth()]} ${startD.getFullYear()} — ${MN[endD.getMonth()]} ${endD.getFullYear()}</div>
-    </div>
-    <div class="stats-2">
-      <div class="stat-box"><div class="stat-box-num">${j.members.length}</div><div class="stat-box-lbl">أعضاء</div></div>
-      <div class="stat-box stat-box-teal"><div class="stat-box-num">${fund.toLocaleString()}</div><div class="stat-box-lbl">الصندوق الشهري</div></div>
-      <div class="stat-box"><div class="stat-box-num">${j.amount.toLocaleString()}</div><div class="stat-box-lbl">مبلغ العضو</div></div>
-      <div class="stat-box stat-box-teal"><div class="stat-box-num">${pct}%</div><div class="stat-box-lbl">نسبة الإنجاز</div></div>
-    </div>
-    <div class="table-block">
-      <div class="table-head-row">
-        <div class="table-head-title">جدول الدفعات</div>
-        <div class="table-head-hint">اضغط للتسجيل</div>
-      </div>
-      <div class="tbl-wrap"><table>
-        <thead><tr>
-          <th>الشهر</th>
-          ${j.members.map(m=>`<th>${m}</th>`).join('')}
-        </tr></thead>
-        <tbody>${tblRows}</tbody>
-      </table></div>
-    </div>
-    <button class="btn-danger" onclick="deleteJam(${j.id})">
-      <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      حذف الجمعية
-    </button>`;
+  var thCells = j.members.map(function(m){return '<th>'+m+'</th>';}).join('');
+  var isOwner = currentUser && j.created_by === currentUser.id;
+  var actions = isEdit
+    ? '<div class="thead-actions"><button class="btn-cancel" onclick="cancelEdit()">إلغاء</button><button class="btn-save" id="btn-save" onclick="saveEdit()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>حفظ</button></div>'
+    : (isOwner ? '<button class="btn-edit" onclick="startEdit()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>تعديل</button>' : '');
+  var banner = '<div class="edit-banner'+(isEdit?' on':'')+'"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>وضع التعديل — اضغط على الخانة لتغييرها ثم احفظ</div>';
+
+  document.getElementById('pg-detail').innerHTML =
+    '<div class="dtop"><div class="dtop-name">'+j.name+'</div><div class="dtop-sub">'+hLabel(sd.getFullYear(),sd.getMonth()+1)+' — '+hLabel(ed.getFullYear(),ed.getMonth()+1)+'</div></div>'+
+    '<div class="sgrid">'+
+      '<div class="sbox"><div class="sbox-n">'+j.members.length+'</div><div class="sbox-l">أعضاء</div></div>'+
+      '<div class="sbox teal"><div class="sbox-n">'+fund.toLocaleString('ar')+'</div><div class="sbox-l">الصندوق الشهري</div></div>'+
+      '<div class="sbox"><div class="sbox-n">'+Number(j.amount).toLocaleString('ar')+'</div><div class="sbox-l">مبلغ العضو</div></div>'+
+      '<div class="sbox teal"><div class="sbox-n">'+st.pct+'%</div><div class="sbox-l">نسبة الإنجاز</div></div>'+
+    '</div>'+
+    '<div class="tblock">'+
+      '<div class="thead-row"><div class="thead-t">جدول الدفعات</div>'+actions+'</div>'+
+      banner+
+      '<div class="twrap"><table><thead><tr><th>الشهر</th>'+thCells+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '</div>'+
+    '<button class="btn-print" onclick="printPDF()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>طباعة / تصدير PDF</button>';
 }
 
-function togglePay(jid,mi,xi){
-  const j=DB.find(x=>x.id===jid);
-  j.months[mi].payments[xi]=!j.months[mi].payments[xi];
-  save();
-  toast(j.months[mi].payments[xi]?'تم تسجيل الدفع ✓':'تم الإلغاء');
-  renderDetail(j);
+/* ── EDIT MODE ── */
+function startEdit() {
+  isEdit = true; editCache = {};
+  var j = curJam, months = buildMonths(j);
+  months.forEach(function(mo,mi){
+    j.members.forEach(function(_,xi){
+      if (xi!==mo.receiver) editCache[mi+'_'+xi] = payCache[mi+'_'+xi]||false;
+    });
+  });
+  renderDetail();
 }
 
-function deleteJam(id){
-  if(!confirm('حذف هذه الجمعية نهائياً؟')) return;
-  DB=DB.filter(j=>j.id!==id);save();
-  toast('تم الحذف');nav('home');
+function cancelEdit(){isEdit=false;editCache={};renderDetail();}
+
+function toggleEdit(mi,xi){
+  if (!isEdit) return;
+  editCache[mi+'_'+xi] = !editCache[mi+'_'+xi];
+  renderDetail();
 }
 
-renderMembers();
-renderHome();
+async function saveEdit() {
+  var btn = document.getElementById('btn-save');
+  if (btn){btn.disabled=true;btn.textContent='جاري الحفظ...';}
+  var j = curJam, months = buildMonths(j), changed = [];
+  months.forEach(function(mo,mi){
+    j.members.forEach(function(_,xi){
+      if (xi!==mo.receiver && editCache[mi+'_'+xi]!==(payCache[mi+'_'+xi]||false)){
+        changed.push({jamiya_id:j.id,month_index:mi,member_index:xi,paid:editCache[mi+'_'+xi]});
+      }
+    });
+  });
+  if (!changed.length){toast('لا توجد تغييرات');isEdit=false;editCache={};renderDetail();return;}
+  var res = await sb.from('payments').upsert(changed,{onConflict:'jamiya_id,month_index,member_index'});
+  if (res.error){toast('خطأ في الحفظ');if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>حفظ';}return;}
+  changed.forEach(function(c){payCache[c.month_index+'_'+c.member_index]=c.paid;});
+  isEdit=false;editCache={};toast('تم الحفظ ✓');renderDetail();
+}
+
+/* ── PRINT PDF ── */
+function printPDF() {
+  var j = curJam, months = buildMonths(j);
+  var fund = (j.members.length-1)*j.amount;
+  var st = calcStats(j,months,payCache);
+  var sd = new Date(parseStartMonth(j.start_month)+'-01');
+  var ed = new Date(parseStartMonth(j.start_month)+'-01'); ed.setMonth(ed.getMonth()+months.length-1);
+
+  var rows = '';
+  months.forEach(function(mo,mi){
+    var allDone = j.members.every(function(_,xi){return xi===mo.receiver||payCache[mi+'_'+xi];});
+    var cells = '';
+    j.members.forEach(function(_,xi){
+      if (xi===mo.receiver){cells+='<td style="text-align:center;background:#FFF8E6;color:#8a6000;font-size:10px;font-weight:700">مستلم</td>';}
+      else{cells+='<td style="text-align:center;font-size:16px">'+(payCache[mi+'_'+xi]?'✅':'⬜')+'</td>';}
+    });
+    rows+='<tr style="background:'+(allDone?'#f0fdf4':'#fff')+'"><td style="padding:8px 10px;font-size:11px;font-weight:600;white-space:nowrap">'+(allDone?'✓ ':'')+hLabel(mo.year,mo.month)+'</td>'+cells+'</tr>';
+  });
+
+  var ths = j.members.map(function(m){return '<th style="background:#f5f4f0;padding:9px 7px;font-size:11px;font-weight:700;color:#888;text-align:center;border-bottom:1px solid #E8E6E0;white-space:nowrap">'+m+'</th>';}).join('');
+
+  var win = window.open('','_blank');
+  if (!win){toast('يرجى السماح بفتح نوافذ منبثقة');return;}
+  win.document.write('<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>'+j.name+'</title>');
+  win.document.write('<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">');
+  win.document.write('<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px;color:#0D0D0D;font-size:13px}');
+  win.document.write('.hdr{background:#0D0D0D;color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}');
+  win.document.write('.hdr-name{font-size:20px;font-weight:700}.hdr-sub{font-size:11px;opacity:.5;margin-top:3px}.hdr-logo{font-size:10px;font-weight:700;color:#00C9A7;letter-spacing:1px}');
+  win.document.write('.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}');
+  win.document.write('.box{border:1px solid #E8E6E0;border-radius:10px;padding:11px;text-align:center}.box-n{font-size:20px;font-weight:700;color:#009E84}.box-l{font-size:10px;color:#888;margin-top:2px;font-weight:600}');
+  win.document.write('.pb-wrap{margin-bottom:18px}.pb-row{display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:5px}');
+  win.document.write('.pb{height:7px;background:#E8E6E0;border-radius:99px;overflow:hidden}.pb-f{height:100%;background:#00C9A7;border-radius:99px}');
+  win.document.write('table{width:100%;border-collapse:collapse;border:1px solid #E8E6E0;border-radius:10px;overflow:hidden}');
+  win.document.write('td{padding:9px 7px;border-bottom:1px solid #F0F0F0}tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:#FAFAF8}');
+  win.document.write('.foot{margin-top:16px;text-align:center;font-size:11px;color:#ccc}');
+  win.document.write('@media print{body{padding:10px}.hdr,.pb-f{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>');
+  win.document.write('<div class="hdr"><div><div class="hdr-name">'+j.name+'</div><div class="hdr-sub">'+hLabel(sd.getFullYear(),sd.getMonth()+1)+' — '+hLabel(ed.getFullYear(),ed.getMonth()+1)+'</div></div><div class="hdr-logo">JAMIYA</div></div>');
+  win.document.write('<div class="grid">');
+  win.document.write('<div class="box"><div class="box-n">'+j.members.length+'</div><div class="box-l">أعضاء</div></div>');
+  win.document.write('<div class="box"><div class="box-n">'+Number(j.amount).toLocaleString('ar')+'</div><div class="box-l">مبلغ العضو</div></div>');
+  win.document.write('<div class="box"><div class="box-n">'+fund.toLocaleString('ar')+'</div><div class="box-l">الصندوق الشهري</div></div>');
+  win.document.write('<div class="box"><div class="box-n">'+st.pct+'%</div><div class="box-l">نسبة الإنجاز</div></div>');
+  win.document.write('</div>');
+  win.document.write('<div class="pb-wrap"><div class="pb-row"><span>نسبة الدفعات</span><span>'+st.paid+' من '+st.total+' دفعة</span></div><div class="pb"><div class="pb-f" style="width:'+st.pct+'%"></div></div></div>');
+  win.document.write('<table><thead><tr><th style="background:#f5f4f0;padding:9px 10px;font-size:11px;font-weight:700;color:#888;text-align:right;border-bottom:1px solid #E8E6E0;white-space:nowrap">الشهر</th>'+ths+'</tr></thead><tbody>'+rows+'</tbody></table>');
+  win.document.write('<div class="foot">جمعيتي — تقرير تلقائي</div></body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+}
+
+function genCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = '';
+  for (var i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+/* ── JOIN BY CODE ── */
+var lookupTimer = null;
+var foundJam = null;
+
+function resetJoinResult() {
+  foundJam = null;
+  document.getElementById('code-result').classList.remove('on');
+  document.getElementById('btn-join').style.display = 'none';
+}
+
+function lookupCode() {
+  clearTimeout(lookupTimer);
+  var code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (code.length < 6) { resetJoinResult(); return; }
+  lookupTimer = setTimeout(async function() {
+    var r = await sb.from('jamiya').select('*').eq('invite_code', code).single();
+    if (r.error || !r.data) {
+      document.getElementById('code-result').classList.add('on');
+      document.getElementById('code-result-name').textContent = 'كود غير صحيح';
+      document.getElementById('code-result-meta').textContent = 'تحقق من الكود وأعد المحاولة';
+      document.getElementById('code-result').style.borderColor = 'var(--red)';
+      document.getElementById('btn-join').style.display = 'none';
+      foundJam = null; return;
+    }
+    foundJam = r.data;
+    // هل المستخدم منضم مسبقاً؟
+    var already = allJams.find(function(j){ return j.id === foundJam.id; });
+    document.getElementById('code-result').classList.add('on');
+    document.getElementById('code-result').style.borderColor = 'var(--teal)';
+    document.getElementById('code-result-name').textContent = foundJam.name;
+    document.getElementById('code-result-meta').textContent = foundJam.members.length + ' أعضاء · ' + Number(foundJam.amount).toLocaleString('ar') + ' ر.س شهرياً';
+    document.getElementById('btn-join').style.display = already ? 'none' : 'flex';
+    if (already) { document.getElementById('code-result-meta').textContent += ' · أنت منضم مسبقاً'; }
+  }, 400);
+}
+
+async function joinJam() {
+  if (!foundJam) return;
+  var btn = document.getElementById('btn-join');
+  btn.disabled = true; btn.textContent = 'جاري الانضمام...';
+  var res = await sb.from('jamiya_members').insert({jamiya_id: foundJam.id, user_id: currentUser.id});
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>انضم للجمعية';
+  if (res.error) { toast('خطأ: ' + res.error.message); return; }
+  toast('تم الانضمام للجمعية ✓');
+  nav('home');
+}
+
+function shareInvite() {
+  if (!activeJam || !activeJam.invite_code) { toast('لا يوجد كود دعوة'); return; }
+  var code = activeJam.invite_code;
+  var text = 'انضم لجمعية "' + activeJam.name + '" باستخدام الكود: ' + code;
+  if (navigator.share) {
+    navigator.share({title: 'دعوة جمعية', text: text});
+  } else {
+    navigator.clipboard.writeText(code).then(function(){ toast('تم نسخ الكود: ' + code); });
+  }
+}
+
+var activeJam = null;
+var allJams = [];
+
+function openOpts(id, name) {
+  activeJam = allJams.find(function(j){ return j.id == id; }) || {id:id, name:name};
+  document.getElementById('act-jam-name').textContent = name;
+  var ov = document.getElementById('act-overlay');
+  ov.style.display = 'flex';
+  setTimeout(function(){ ov.classList.add('on'); }, 10);
+}
+
+function closeOpts() {
+  var ov = document.getElementById('act-overlay');
+  ov.classList.remove('on');
+  setTimeout(function(){ ov.style.display = 'none'; }, 200);
+}
+
+function openDetailById() {
+  if (activeJam) openDetail(activeJam);
+}
+
+function editJam() {
+  if (!activeJam) return;
+  var j = activeJam;
+  // ملء نموذج الإنشاء ببيانات الجمعية للتعديل
+  document.getElementById('f-name').value = j.name;
+  document.getElementById('f-amount').value = j.amount;
+  // تحويل start_month من ميلادي إلى هجري لعرضه
+  var sm = parseStartMonth(j.start_month);
+  var parts = sm.split('-');
+  if (parts.length >= 2) {
+    var h = toHijri(parseInt(parts[0]), parseInt(parts[1]), 1);
+    document.getElementById('f-hijri-month').value = h.month;
+    populateHijriYears();
+    document.getElementById('f-hijri-year').value = h.year;
+  }
+  mbrs = j.members.slice(); renderMembers();
+  editingJamId = j.id;
+  nav('create');
+  document.getElementById('btn-create').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>حفظ التعديلات';
+}
+
+/* ── DELETE ── */
+var pendingDeleteId = null;
+var pendingDeleteName = '';
+var editingJamId = null;
+
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  pendingDeleteName = name;
+  var overlay = document.getElementById('del-overlay');
+  document.getElementById('del-overlay-name').textContent = name;
+  overlay.style.display = 'flex';
+  setTimeout(function(){ overlay.classList.add('on'); }, 10);
+}
+
+function cancelDelete() {
+  pendingDeleteId = null;
+  var overlay = document.getElementById('del-overlay');
+  overlay.classList.remove('on');
+  setTimeout(function(){ overlay.style.display = 'none'; }, 200);
+}
+
+async function deleteJam() {
+  if (!pendingDeleteId) return;
+  var res = await sb.from('jamiya').delete().eq('id', pendingDeleteId);
+  if (res.error){ toast('خطأ في الحذف'); cancelDelete(); return; }
+  toast('تم الحذف');
+  cancelDelete();
+  loadHome();
+}
+
+/* ── INIT ── */
+// يتم التهيئة عبر onAuthStateChange أعلاه
 </script>
 </body>
 </html>
