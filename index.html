@@ -542,9 +542,53 @@ function getStartMonth() {
   var hm = parseInt(document.getElementById('f-hijri-month').value);
   var hy = parseInt(document.getElementById('f-hijri-year').value);
   if (!hm || !hy) return null;
-  var g = hijriToGreg(hy, hm);
-  var mm = g.month < 10 ? '0'+g.month : ''+g.month;
-  return g.year + '-' + mm;
+  // نحفظ التاريخ هجرياً مباشرة بصيغة H-YYYY-MM
+  var mm = hm < 10 ? '0'+hm : ''+hm;
+  return 'H-' + hy + '-' + mm;
+}
+
+function parseStartMonth(start_month) {
+  var parts = (start_month||'').split('-');
+  // صيغة هجرية جديدة: H-YYYY-MM
+  if (parts[0] === 'H' && parts.length >= 3) {
+    return {hijri: true, year: parseInt(parts[1]), month: parseInt(parts[2])};
+  }
+  // صيغة ميلادية قديمة أو هجرية بدون H
+  if (parts.length >= 2) {
+    var yr = parseInt(parts[0]), mo = parseInt(parts[1]);
+    if (yr > 0 && yr < 1500) return {hijri: true, year: yr, month: mo};
+    return {hijri: false, year: yr, month: mo};
+  }
+  return {hijri: false, year: 2024, month: 1};
+}
+
+function addHijriMonths(hy, hm, n) {
+  hm = hm + n;
+  while (hm > 12) { hm -= 12; hy++; }
+  return {year: hy, month: hm};
+}
+
+function buildMonths(j) {
+  var sm = parseStartMonth(j.start_month);
+  return j.members.map(function(_,i){
+    if (sm.hijri) {
+      var h = addHijriMonths(sm.year, sm.month, i);
+      return {year: h.year, month: h.month, receiver: i, hijri: true};
+    } else {
+      var d = new Date(sm.year+'-'+(sm.month<10?'0':'')+sm.month+'-01');
+      d.setMonth(d.getMonth()+i);
+      return {year: d.getFullYear(), month: d.getMonth()+1, receiver: i, hijri: false};
+    }
+  });
+}
+
+function hLabel(year, month, isHijri) {
+  if (isHijri) {
+    return HMN[month-1] + ' ' + year + ' هـ';
+  }
+  // ميلادي → هجري
+  var h = toHijri(year, month, 15); // نستخدم منتصف الشهر لتجنب حافة الشهر
+  return HMN[h.month-1] + ' ' + h.year + ' هـ';
 }
 
 /* ── STATE ── */
@@ -809,13 +853,14 @@ function renderDetail() {
   var fund = (j.members.length-1)*j.amount;
   var dc = isEdit ? editCache : payCache;
   var st = calcStats(j,months,dc);
-  var sd = new Date(parseStartMonth(j.start_month)+'-01');
-  var ed = new Date(parseStartMonth(j.start_month)+'-01'); ed.setMonth(ed.getMonth()+months.length-1);
+  var sm = parseStartMonth(j.start_month);
+  var months = buildMonths(j);
+  var firstMo = months[0], lastMo = months[months.length-1];
 
   var rows = '';
   months.forEach(function(mo,mi){
     var allDone = j.members.every(function(_,xi){return xi===mo.receiver||dc[mi+'_'+xi];});
-    var label = (allDone?'<span class="ok-dot"></span>':'')+hLabel(mo.year,mo.month);
+    var label = (allDone?'<span class="ok-dot"></span>':'')+hLabel(mo.year,mo.month,mo.hijri);
     var cells = '';
     j.members.forEach(function(_,xi){
       if (xi===mo.receiver){cells+='<td><span class="rcv">مستلم</span></td>';return;}
@@ -836,7 +881,7 @@ function renderDetail() {
   var banner = '<div class="edit-banner'+(isEdit?' on':'')+'"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>وضع التعديل — اضغط على الخانة لتغييرها ثم احفظ</div>';
 
   document.getElementById('pg-detail').innerHTML =
-    '<div class="dtop"><div class="dtop-name">'+j.name+'</div><div class="dtop-sub">'+hLabel(sd.getFullYear(),sd.getMonth()+1)+' — '+hLabel(ed.getFullYear(),ed.getMonth()+1)+'</div></div>'+
+    '<div class="dtop"><div class="dtop-name">'+j.name+'</div><div class="dtop-sub">'+hLabel(firstMo.year,firstMo.month,firstMo.hijri)+' — '+hLabel(lastMo.year,lastMo.month,lastMo.hijri)+'</div></div>'+
     '<div class="sgrid">'+
       '<div class="sbox"><div class="sbox-n">'+j.members.length+'</div><div class="sbox-l">أعضاء</div></div>'+
       '<div class="sbox teal"><div class="sbox-n">'+fund.toLocaleString('ar')+'</div><div class="sbox-l">الصندوق الشهري</div></div>'+
@@ -895,7 +940,7 @@ async function saveEdit() {
     var allPaid = j.members.every(function(_, xi) {
       return xi === mo.receiver || payCache[mi+'_'+xi];
     });
-    if (allPaid) completedMonths.push(hLabel(mo.year, mo.month));
+    if (allPaid) completedMonths.push(hLabel(mo.year, mo.month, mo.hijri));
   });
   if (completedMonths.length > 0) {
     setTimeout(function() {
