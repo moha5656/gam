@@ -548,16 +548,21 @@ function getStartMonth() {
 }
 
 function parseStartMonth(start_month) {
-  var parts = (start_month||'').split('-');
+  if (!start_month) return {hijri: false, year: 2024, month: 1};
+  var parts = start_month.split('-');
   // صيغة هجرية جديدة: H-YYYY-MM
   if (parts[0] === 'H' && parts.length >= 3) {
     return {hijri: true, year: parseInt(parts[1]), month: parseInt(parts[2])};
   }
-  // صيغة ميلادية قديمة أو هجرية بدون H
+  // صيغة رقمية: YYYY-MM
   if (parts.length >= 2) {
     var yr = parseInt(parts[0]), mo = parseInt(parts[1]);
-    if (yr > 0 && yr < 1500) return {hijri: true, year: yr, month: mo};
-    return {hijri: false, year: yr, month: mo};
+    if (!isNaN(yr) && !isNaN(mo)) {
+      // إذا السنة أقل من 1500 فهي هجرية
+      if (yr < 1500) return {hijri: true, year: yr, month: mo};
+      // وإلا ميلادية
+      return {hijri: false, year: yr, month: mo};
+    }
   }
   return {hijri: false, year: 2024, month: 1};
 }
@@ -583,11 +588,12 @@ function buildMonths(j) {
 }
 
 function hLabel(year, month, isHijri) {
+  if (!year || !month || isNaN(year) || isNaN(month)) return '—';
   if (isHijri) {
     return HMN[month-1] + ' ' + year + ' هـ';
   }
-  // ميلادي → هجري
-  var h = toHijri(year, month, 15); // نستخدم منتصف الشهر لتجنب حافة الشهر
+  // ميلادي → هجري (نستخدم منتصف الشهر لتجنب حافة الشهر)
+  var h = toHijri(year, month, 15);
   return HMN[h.month-1] + ' ' + h.year + ' هـ';
 }
 
@@ -663,14 +669,6 @@ function parseStartMonth(start_month) {
   return start_month;
 }
 
-function buildMonths(j) {
-  var sm = parseStartMonth(j.start_month);
-  return j.members.map(function(_,i){
-    var d = new Date(sm+'-01'); d.setMonth(d.getMonth()+i);
-    return {year:d.getFullYear(), month:d.getMonth()+1, receiver:i};
-  });
-}
-
 function calcStats(j, months, cache) {
   var total = months.length*(j.members.length-1), paid = 0;
   months.forEach(function(mo,mi){
@@ -706,7 +704,14 @@ async function loadHome() {
   var seen = {};
   var jams = [];
   ownJams.concat(joinedJams).forEach(function(j){
-    if (!seen[j.id]) { seen[j.id]=true; jams.push(j); }
+    if (!seen[j.id]) {
+      // تأكد أن members مصفوفة
+      if (typeof j.members === 'string') {
+        try { j.members = JSON.parse(j.members); } catch(e) { j.members = []; }
+      }
+      if (!Array.isArray(j.members)) j.members = [];
+      seen[j.id]=true; jams.push(j);
+    }
   });
 
   if (rOwn.error) { list.innerHTML = '<div class="loader">فشل التحميل — تحقق من الاتصال</div>'; return; }
@@ -835,11 +840,15 @@ async function createJam() {
 
 /* ── DETAIL ── */
 async function openDetail(j) {
+  // تأكد أن members مصفوفة وليست string
+  if (typeof j.members === 'string') {
+    try { j.members = JSON.parse(j.members); } catch(e) { j.members = []; }
+  }
   curJam = j; isEdit = false;
   document.getElementById('bn-home').classList.remove('on');
   document.getElementById('bn-create').classList.remove('on');
-  var sd = new Date(parseStartMonth(j.start_month)+'-01');
-  setTop(j.name, hLabel(sd.getFullYear(),sd.getMonth()+1), true);
+  var sm = parseStartMonth(j.start_month);
+  setTop(j.name, hLabel(sm.year, sm.month, sm.hijri), true);
   showPage('detail'); window.scrollTo(0,0);
   document.getElementById('pg-detail').innerHTML = '<div class="loader"><div class="spin"></div>جاري التحميل...</div>';
   var res = await sb.from('payments').select('*').eq('jamiya_id',j.id);
